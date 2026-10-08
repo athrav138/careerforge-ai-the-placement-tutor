@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { createSession, toClientUser } from "@/lib/auth-server";
+import { getCurrentUser, toClientUser } from "@/lib/auth-server";
 
 export async function POST(request: Request) {
   try {
@@ -17,40 +17,52 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please enter your email and password." }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        passwordHash: true,
-        studentProfile: {
-          select: {
-            id: true,
-            profileCompletion: true,
-          },
-        },
-      },
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    const passwordValid = user ? await bcrypt.compare(password, user.passwordHash) : false;
-
-    if (!user || !passwordValid) {
-      return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+    if (error || !data.user) {
+      return NextResponse.json({ error: error?.message || "Invalid email or password." }, { status: 401 });
     }
 
-    createSession(user.id);
-
-    return NextResponse.json({
-      user: toClientUser({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        onboardingComplete: (user.studentProfile?.profileCompletion ?? 0) > 0,
-        studentProfileId: user.studentProfile?.id ?? null,
-      }),
+    let dbUser = await prisma.user.findUnique({
+      where: { supabaseUserId: data.user.id }
     });
-  } catch {
+
+    if (!dbUser && data.user.email) {
+      dbUser = await prisma.user.findUnique({
+        where: { email: data.user.email }
+      });
+      if (dbUser) {
+        dbUser = await prisma.user.update({
+          where: { id: dbUser.id },
+          data: { supabaseUserId: data.user.id }
+        });
+      } else {
+        dbUser = await prisma.user.create({
+          data: {
+            email: data.user.email,
+            supabaseUserId: data.user.id,
+            name: data.user.user_metadata?.full_name || data.user.email.split('@')[0],
+            passwordHash: 'supabase',
+            studentProfile: {
+              create: {}
+            }
+          }
+        });
+      }
+    }
+
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unable to complete login." }, { status: 500 });
+    }
+
+    return NextResponse.json({ user: toClientUser(user) });
+  } catch (err) {
+    console.error("Login API error:", err);
     return NextResponse.json({ error: "Unable to log in." }, { status: 500 });
   }
 }

@@ -1,25 +1,12 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
-const SESSION_COOKIE = "careerforge-session";
-
-export function middleware(request: NextRequest) {
-  const isProtectedRoute =
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/onboarding");
-
-  if (!isProtectedRoute) {
-    return NextResponse.next();
-  }
-
-  if (!request.cookies.get(SESSION_COOKIE)?.value) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  return await updateSession(request);
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/onboarding"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4)$).*)",
+  ],
 };

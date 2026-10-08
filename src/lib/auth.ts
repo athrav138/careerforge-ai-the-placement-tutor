@@ -1,5 +1,7 @@
 "use client";
 
+import { createClient } from "@/lib/supabase/client";
+
 export type UserSession = {
   name: string;
   email: string;
@@ -8,16 +10,31 @@ export type UserSession = {
 
 export async function getSession(): Promise<UserSession | null> {
   try {
-    const response = await fetch("/api/auth/me", {
-      method: "GET",
-      credentials: "include",
-      cache: "no-store",
-    });
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) return null;
 
-    if (!response.ok) return null;
+    try {
+      const response = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
 
-    const data = (await response.json()) as { user?: UserSession };
-    return data.user ?? null;
+      if (response.ok) {
+        const data = (await response.json()) as { user?: UserSession };
+        if (data.user) return data.user;
+      }
+    } catch (error) {
+      console.error("Failed to fetch /api/auth/me", error);
+    }
+
+    return {
+      name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || "User",
+      email: session.user.email || "",
+      onboardingComplete: false,
+    };
   } catch {
     return null;
   }
@@ -25,12 +42,10 @@ export async function getSession(): Promise<UserSession | null> {
 
 export async function clearSession() {
   try {
-    await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "include",
-    });
+    const supabase = createClient();
+    await supabase.auth.signOut();
   } catch {
-    // Keep logout navigation responsive even if the cleanup request fails.
+    // Keep logout navigation responsive even if cleanup fails
   }
 }
 

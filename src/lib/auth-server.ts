@@ -1,11 +1,7 @@
 import "server-only";
 
-import { createHmac, randomBytes, timingSafeEqual } from "crypto";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-
-const SESSION_COOKIE = "careerforge-session";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+import { createClient } from "@/lib/supabase/server";
 
 export type SafeUser = {
   id: string;
@@ -15,109 +11,129 @@ export type SafeUser = {
   studentProfileId: string | null;
 };
 
-function getSessionSecret() {
-  const secret = process.env.SESSION_SECRET;
-
-  if (!secret || secret.length < 32) {
-    throw new Error("SESSION_SECRET must be set to at least 32 characters.");
-  }
-
-  return secret;
-}
-
-function sign(value: string) {
-  return createHmac("sha256", getSessionSecret()).update(value).digest("base64url");
-}
-
-function encodeSession(userId: string) {
-  const payload = JSON.stringify({
-    userId,
-    nonce: randomBytes(16).toString("base64url"),
-    exp: Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
-  });
-  const body = Buffer.from(payload).toString("base64url");
-  return `${body}.${sign(body)}`;
-}
-
-function decodeSession(token?: string): { userId: string } | null {
-  if (!token) return null;
-
-  const [body, signature] = token.split(".");
-  if (!body || !signature) return null;
-
-  const expected = sign(body);
-  const expectedBuffer = Buffer.from(expected);
-  const signatureBuffer = Buffer.from(signature);
-
-  if (
-    expectedBuffer.length !== signatureBuffer.length ||
-    !timingSafeEqual(expectedBuffer, signatureBuffer)
-  ) {
-    return null;
-  }
+async function runQueryWithRetry<T>(queryFn: () => Promise<T>, timeoutMs = 8000): Promise<T> {
+  const executeWithTimeout = () => {
+    let timer: NodeJS.Timeout;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error("Database query timed out")), timeoutMs);
+    });
+    return Promise.race([queryFn(), timeoutPromise]).finally(() => clearTimeout(timer));
+  };
 
   try {
-    const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8")) as {
-      userId?: string;
-      exp?: number;
-    };
-
-    if (!payload.userId || !payload.exp || payload.exp < Date.now()) return null;
-    return { userId: payload.userId };
-  } catch {
-    return null;
+    return await executeWithTimeout();
+  } catch (err: any) {
+    const isConnectionError =
+      err?.message?.includes("Closed") ||
+      err?.message?.includes("PostgreSQL connection") ||
+      err?.message?.includes("timed out");
+    if (isConnectionError) {
+      console.warn("Retrying database query after connection drop or timeout:", err?.message);
+      return await executeWithTimeout();
+    }
+    throw err;
   }
-}
-
-export function createSession(userId: string) {
-  cookies().set(SESSION_COOKIE, encodeSession(userId), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-  });
-}
-
-export function destroySession() {
-  cookies().set(SESSION_COOKIE, "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 0,
-    expires: new Date(0),
-  });
 }
 
 export async function getCurrentUser(): Promise<SafeUser | null> {
-  const session = decodeSession(cookies().get(SESSION_COOKIE)?.value);
-  if (!session) return null;
+  try {
+    const supabase = createClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    
+    if (!authUser || !authUser.email) return null;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      studentProfile: {
+    let user = await runQueryWithRetry(() =>
+      prisma.user.findUnique({
+        where: { supabaseUserId: authUser.id },
         select: {
           id: true,
-          profileCompletion: true,
+          name: true,
+          email: true,
+          studentProfile: {
+            select: {
+              id: true,
+              profileCompletion: true,
+            },
+          },
         },
-      },
-    },
-  });
+      })
+    );
 
-  if (!user) return null;
+    if (!user) {
+      const existingUser = await runQueryWithRetry(() =>
+        prisma.user.findUnique({
+          where: { email: authUser.email },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            studentProfile: {
+              select: {
+                id: true,
+                profileCompletion: true,
+              },
+            },
+          },
+        })
+      );
 
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    onboardingComplete: (user.studentProfile?.profileCompletion ?? 0) > 0,
-    studentProfileId: user.studentProfile?.id ?? null,
-  };
+      if (existingUser) {
+        user = await runQueryWithRetry(() =>
+          prisma.user.update({
+            where: { id: existingUser.id },
+            data: { supabaseUserId: authUser.id },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              studentProfile: {
+                select: {
+                  id: true,
+                  profileCompletion: true,
+                },
+              },
+            },
+          })
+        );
+      } else {
+        user = await runQueryWithRetry(() =>
+          prisma.user.create({
+            data: {
+              email: authUser.email,
+              supabaseUserId: authUser.id,
+              name: authUser.user_metadata?.full_name || authUser.email.split('@')[0],
+              passwordHash: 'oauth',
+              studentProfile: {
+                create: {},
+              },
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              studentProfile: {
+                select: {
+                  id: true,
+                  profileCompletion: true,
+                },
+              },
+            },
+          })
+        );
+      }
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      onboardingComplete: (user.studentProfile?.profileCompletion ?? 0) > 0,
+      studentProfileId: user.studentProfile?.id ?? null,
+    };
+  } catch (error) {
+    console.error("getCurrentUser error:", error);
+    return null;
+  }
 }
 
 export function toClientUser(user: SafeUser) {
