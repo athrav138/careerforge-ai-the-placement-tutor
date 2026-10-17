@@ -52,7 +52,7 @@ function startOfToday() {
 }
 
 export async function calculateReadiness(studentProfileId: string): Promise<ReadinessProfile> {
-  const [careerAnalysis, resume, assessment, legacyAptitudeAttempt, skillPerformances, roadmap, interviewSessions, projectRecommendations, githubConnection, linkedinProfile, professionalEvidence] =
+  const [careerAnalysis, resume, assessment, legacyAptitudeAttempt, skillPerformances, roadmap, interviewStats, projectStats, githubConnection, githubRepositoryCount, linkedinProfile] =
     await Promise.all([
       prisma.careerAnalysis.findFirst({
         where: { studentProfileId },
@@ -83,32 +83,39 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
         orderBy: { updatedAt: "desc" },
         select: { progress: true, tasks: { select: { status: true } } },
       }),
-      prisma.interviewSession.findMany({
+      prisma.interviewSession.aggregate({
         where: { studentProfileId, status: "COMPLETED", score: { not: null } },
-        select: { score: true },
+        _avg: { score: true },
+        _count: { _all: true },
       }),
-      prisma.projectRecommendation.findMany({
+      prisma.projectRecommendation.groupBy({
+        by: ["status"],
         where: { studentProfileId },
-        select: { status: true, skillsDemonstrated: true },
+        _count: { _all: true },
       }),
       prisma.gitHubConnection.findUnique({
         where: { studentProfileId },
-        include: {
-          repositories: true,
-          skillEvidence: true,
+        select: {
+          _count: {
+            select: {
+              repositories: { where: { hasReadme: true } },
+              skillEvidence: true,
+            },
+          },
         },
       }),
+      prisma.gitHubRepository.count({ where: { connection: { is: { studentProfileId } } } }),
       prisma.linkedInProfile.findUnique({
         where: { studentProfileId },
-        include: {
-          skills: true,
-          experience: true,
-          education: true,
+        select: {
+          _count: {
+            select: {
+              skills: true,
+              experience: true,
+              education: true,
+            },
+          },
         },
-      }),
-      prisma.professionalEvidence.findMany({
-        where: { studentProfileId },
-        select: { confidence: true, source: true },
       }),
     ]);
 
@@ -163,30 +170,32 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
       }
     : unavailable("Generate a learning roadmap to track completion.");
 
-  const scoredInterviews = interviewSessions.map((session) => session.score).filter((score): score is number => score !== null);
-  const interview = scoredInterviews.length
+  const interview = interviewStats._count._all > 0 && interviewStats._avg.score !== null
     ? {
-        score: clampScore(scoredInterviews.reduce((total, score) => total + score, 0) / scoredInterviews.length),
+        score: clampScore(interviewStats._avg.score),
         available: true,
-        explanation: `Average score across ${scoredInterviews.length} completed mock interview${scoredInterviews.length === 1 ? "" : "s"}.`,
+        explanation: `Average score across ${interviewStats._count._all} completed mock interview${interviewStats._count._all === 1 ? "" : "s"}.`,
       }
     : unavailable("Complete a mock interview to measure interview performance.");
 
-  const completedProjects = projectRecommendations.filter((recommendation) => recommendation.status === "COMPLETED");
-  const projects = projectRecommendations.length
+  const projectCount = projectStats.reduce((total, group) => total + group._count._all, 0);
+  const completedProjectCount = projectStats.find((group) => group.status === "COMPLETED")?._count._all ?? 0;
+  const projects = projectCount > 0
     ? {
-        score: clampScore((completedProjects.length / projectRecommendations.length) * 100),
+        score: clampScore((completedProjectCount / projectCount) * 100),
         available: true,
-        explanation: `${completedProjects.length} of ${projectRecommendations.length} recommended projects completed as portfolio evidence.`,
+        explanation: `${completedProjectCount} of ${projectCount} recommended projects completed as portfolio evidence.`,
       }
     : unavailable("Generate project recommendations to track portfolio evidence.");
 
   // GitHub evidence
+  const githubReadmeCount = githubConnection?._count.repositories ?? 0;
+  const githubSkillCount = githubConnection?._count.skillEvidence ?? 0;
   const githubScore = githubConnection
-    ? githubConnection.repositories.length > 0
+    ? githubRepositoryCount > 0
       ? clampScore(
-          (githubConnection.repositories.filter(r => r.hasReadme).length / githubConnection.repositories.length) * 50 +
-          (githubConnection.skillEvidence.length / Math.max(1, githubConnection.repositories.length)) * 50
+          (githubReadmeCount / githubRepositoryCount) * 50 +
+          (githubSkillCount / Math.max(1, githubRepositoryCount)) * 50
         )
       : 50
     : null;
@@ -194,8 +203,8 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
     ? {
         score: githubScore,
         available: true,
-        explanation: githubConnection.repositories.length > 0
-          ? `${githubConnection.repositories.length} repositories with ${githubConnection.skillEvidence.length} detected skills.`
+        explanation: githubRepositoryCount > 0
+          ? `${githubRepositoryCount} repositories with ${githubSkillCount} detected skills.`
           : "GitHub connected but no repositories found.",
       }
     : unavailable("Connect GitHub to provide technical portfolio evidence.");
@@ -203,16 +212,16 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
   // LinkedIn evidence
   const linkedinScore = linkedinProfile
     ? clampScore(
-        (linkedinProfile.skills.length > 0 ? 40 : 0) +
-        (linkedinProfile.experience.length > 0 ? 30 : 0) +
-        (linkedinProfile.education.length > 0 ? 30 : 0)
+        (linkedinProfile._count.skills > 0 ? 40 : 0) +
+        (linkedinProfile._count.experience > 0 ? 30 : 0) +
+        (linkedinProfile._count.education > 0 ? 30 : 0)
       )
     : null;
   const linkedin = linkedinScore !== null
     ? {
         score: linkedinScore,
         available: true,
-        explanation: `${linkedinProfile.skills.length} skills, ${linkedinProfile.experience.length} experience entries, ${linkedinProfile.education.length} education entries.`,
+        explanation: `${linkedinProfile._count.skills} skills, ${linkedinProfile._count.experience} experience entries, ${linkedinProfile._count.education} education entries.`,
       }
     : unavailable("Import LinkedIn profile to provide professional evidence.");
 

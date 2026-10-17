@@ -51,10 +51,14 @@ technical labels, corner-bracketed panels.
 
 ## Next steps (per the build order)
 
-1. Set `DATABASE_URL` and `SESSION_SECRET` in `.env`
-2. Apply migrations with `npx prisma migrate deploy`
-3. Seed career roles with `npm run db:seed`
-4. Run `npm run dev`
+1. Set `DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and
+   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env`. Get the Supabase values
+   from **Project Settings → API** (the project URL and publishable/anon key).
+2. Enable Email and Password sign-in in Supabase Authentication. Configure the
+   site's URL and callback URLs for local development and your deployed domain.
+3. Apply migrations with `npx prisma migrate deploy`
+4. Seed career roles with `npm run db:seed`
+5. Run `npm run dev`
 
 ## Profile and career analysis
 
