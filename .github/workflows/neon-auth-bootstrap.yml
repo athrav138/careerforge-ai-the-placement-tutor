@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm view @neondatabase/auth@0.4.2-beta peerDependencies --json
+      - run: npm view @neondatabase/auth@0.3.0-beta peerDependencies --json
       - run: npm install --no-audit --no-fund
       - name: Commit lockfile and remove temporary workflow
         run: |
