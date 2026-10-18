@@ -51,14 +51,26 @@ technical labels, corner-bracketed panels.
 
 ## Next steps (per the build order)
 
-1. Set `DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and
-   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env`. Get the Supabase values
-   from **Project Settings → API** (the project URL and publishable/anon key).
-2. Enable Email and Password sign-in in Supabase Authentication. Configure the
-   site's URL and callback URLs for local development and your deployed domain.
-3. Apply migrations with `npx prisma migrate deploy`
-4. Seed career roles with `npm run db:seed`
-5. Run `npm run dev`
+1. Set `DATABASE_URL`, `NEON_AUTH_BASE_URL`, and
+   `NEON_AUTH_COOKIE_SECRET` in `.env`. Keep database credentials server-side.
+2. Use the Auth URL for the Neon branch that matches this app environment.
+   Localhost is allowed by default for development; add your exact HTTPS
+   production domain under **Neon Console → Auth → Configuration → Domains**.
+3. Generate `NEON_AUTH_COOKIE_SECRET` with
+   `openssl rand -base64 32`.
+4. Apply migrations with `npx prisma migrate deploy`.
+5. Seed career roles with `npm run db:seed`.
+6. Run `npm run dev`.
+
+### Existing account note
+
+CareerForge's existing PostgreSQL `User` and `StudentProfile` records are
+preserved. On their first successful Neon Auth sign-in, a user is matched to
+the existing app record by email and the Neon identity is stored separately.
+Supabase password hashes cannot be transferred directly to Neon Auth, so
+existing password users need to create a Neon Auth password (or use a
+configured OAuth provider) with the same email address. Do not delete old
+Supabase users or overwrite existing profile IDs as part of this transition.
 
 ## Profile and career analysis
 

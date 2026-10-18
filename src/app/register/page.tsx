@@ -3,20 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signup } from "../login/actions";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleGoogleLogin = async () => {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    setError("");
+    try {
+      const { error: authError } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+      if (authError) setError(authError.message || "Unable to continue with Google.");
+    } catch {
+      setError("Unable to continue with Google. Please try again.");
+    }
   };
 
   return (
