@@ -14,13 +14,19 @@ export type SafeUser = {
 
 export async function getAppUserForIdentity(identity: {
   id: string;
-  email: string;
+  email?: string;
   emailVerified: boolean;
   name?: string | null;
 } | null | undefined): Promise<SafeUser | null> {
-  if (!identity?.id || !identity.email) return null;
+  const email = identity?.email?.trim().toLowerCase();
+  if (!identity?.id || !email) return null;
 
-  const user = await ensureAppUser(identity);
+  const user = await ensureAppUser({
+    id: identity.id,
+    email,
+    emailVerified: identity.emailVerified,
+    name: identity.name,
+  });
   const profile = await prisma.studentProfile.findUnique({
     where: { userId: user.id },
     select: { id: true, profileCompletion: true },
@@ -41,16 +47,11 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
     if (error || !data?.user) return null;
     return await getAppUserForIdentity(data.user);
   } catch (error) {
-    // Unverified email identities are intentionally not linked to app data.
     console.error("getCurrentUser error:", error);
     return null;
   }
 }
 
 export function toClientUser(user: SafeUser) {
-  return {
-    name: user.name,
-    email: user.email,
-    onboardingComplete: user.onboardingComplete,
-  };
+  return { name: user.name, email: user.email, onboardingComplete: user.onboardingComplete };
 }

@@ -11,7 +11,7 @@ export type UserSession = {
 export async function getSession(): Promise<UserSession | null> {
   try {
     const { data, error } = await authClient.getSession();
-    if (error || !data?.session || !data.user?.email) return null;
+    if (error || !data?.session || !data.user?.email || data.user.emailVerified !== true) return null;
 
     try {
       const response = await fetch("/api/auth/me", {
