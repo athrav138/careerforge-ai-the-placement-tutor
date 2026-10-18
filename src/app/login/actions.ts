@@ -1,124 +1,65 @@
-'use server'
+"use server";
 
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth/server";
+import { getAppUserForIdentity } from "@/lib/auth-server";
 
 export async function login(formData: FormData) {
-  const supabase = createClient()
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
 
-  const { error, data } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-
-  if (error) {
-    return { error: error.message }
+  if (!email || !password) {
+    return { error: "Please enter your email and password." };
   }
 
-  if (data.user) {
-    let dbUser = await prisma.user.findUnique({
-      where: { supabaseUserId: data.user.id }
-    })
-
-    if (!dbUser && data.user.email) {
-      dbUser = await prisma.user.findUnique({
-        where: { email: data.user.email }
-      })
-
-      if (dbUser) {
-        dbUser = await prisma.user.update({
-          where: { id: dbUser.id },
-          data: { supabaseUserId: data.user.id }
-        })
-      }
-    }
-
-    if (!dbUser && data.user.email) {
-      const passwordHash = await bcrypt.hash(password, 10)
-      try {
-        await prisma.user.create({
-          data: {
-            email: data.user.email,
-            supabaseUserId: data.user.id,
-            name: data.user.user_metadata?.full_name || data.user.email.split('@')[0],
-            passwordHash,
-            studentProfile: {
-              create: {}
-            }
-          }
-        })
-      } catch (dbError) {
-        console.error("Prisma sync error during login", dbError)
-      }
-    }
+  const { data, error } = await auth.signIn.email({ email, password });
+  if (error || !data?.user) {
+    return { error: error?.message || "Invalid email or password." };
   }
 
-  revalidatePath('/dashboard', 'layout')
-  redirect('/dashboard')
+  try {
+    await getAppUserForIdentity(data.user);
+  } catch (error) {
+    console.error("CareerForge user mapping failed after Neon Auth login:", error);
+    return { error: "Signed in, but your student profile could not be loaded. Please try again." };
+  }
+
+  revalidatePath("/dashboard", "layout");
+  redirect("/dashboard");
 }
 
 export async function signup(formData: FormData) {
-  const supabase = createClient()
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
-  const confirmPassword = formData.get('confirmPassword') as string
-  const name = formData.get('name') as string
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
+  if (!name || !email || !password) {
+    return { error: "Please complete all fields." };
+  }
+  if (!email.includes("@")) {
+    return { error: "Please enter a valid email address." };
+  }
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters." };
+  }
   if (password !== confirmPassword) {
-    return { error: 'Passwords do not match.' }
+    return { error: "Passwords do not match." };
   }
 
-  const { error, data } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: name,
-      }
-    }
-  })
-
-  if (error) {
-    return { error: error.message }
+  const { data, error } = await auth.signUp.email({ name, email, password });
+  if (error || !data?.user) {
+    return { error: error?.message || "Unable to create account." };
   }
 
-  if (data.user) {
-    const passwordHash = await bcrypt.hash(password, 10)
-    try {
-      let dbUser = await prisma.user.findUnique({ where: { supabaseUserId: data.user.id } })
-      if (!dbUser && data.user.email) {
-        dbUser = await prisma.user.findUnique({ where: { email: data.user.email } })
-        if (dbUser) {
-          await prisma.user.update({
-            where: { id: dbUser.id },
-            data: { supabaseUserId: data.user.id }
-          })
-        }
-      }
-
-      if (!dbUser && data.user.email) {
-        await prisma.user.create({
-          data: {
-            email: data.user.email,
-            supabaseUserId: data.user.id,
-            name: name || data.user.email.split('@')[0],
-            passwordHash,
-            studentProfile: {
-              create: {}
-            }
-          }
-        })
-      }
-    } catch (dbError) {
-      console.error("Prisma sync error during signup", dbError)
-    }
+  try {
+    await getAppUserForIdentity(data.user);
+  } catch (error) {
+    console.error("CareerForge user mapping failed after Neon Auth signup:", error);
+    return { error: "Your account was created, but your student profile could not be prepared. Please sign in again." };
   }
 
-  revalidatePath('/dashboard', 'layout')
-  redirect('/dashboard')
+  revalidatePath("/dashboard", "layout");
+  redirect("/dashboard");
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth/client";
 
 export type UserSession = {
   name: string;
@@ -10,10 +10,8 @@ export type UserSession = {
 
 export async function getSession(): Promise<UserSession | null> {
   try {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) return null;
+    const { data, error } = await authClient.getSession();
+    if (error || !data?.session || !data.user?.email) return null;
 
     try {
       const response = await fetch("/api/auth/me", {
@@ -23,16 +21,16 @@ export async function getSession(): Promise<UserSession | null> {
       });
 
       if (response.ok) {
-        const data = (await response.json()) as { user?: UserSession };
-        if (data.user) return data.user;
+        const result = (await response.json()) as { user?: UserSession };
+        if (result.user) return result.user;
       }
     } catch (error) {
       console.error("Failed to fetch /api/auth/me", error);
     }
 
     return {
-      name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || "User",
-      email: session.user.email || "",
+      name: data.user.name || data.user.email.split("@")[0] || "User",
+      email: data.user.email,
       onboardingComplete: false,
     };
   } catch {
@@ -42,10 +40,9 @@ export async function getSession(): Promise<UserSession | null> {
 
 export async function clearSession() {
   try {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await authClient.signOut();
   } catch {
-    // Keep logout navigation responsive even if cleanup fails
+    // Keep logout navigation responsive even if cleanup fails.
   }
 }
 
