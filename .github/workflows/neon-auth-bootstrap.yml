@@ -24,8 +24,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Inspect Next.js peer requirement for Neon Auth
+        run: npm view @neondatabase/auth@0.5.0-beta peerDependencies --json
       - name: Install dependencies and refresh lockfile
-        run: npm install --no-audit --no-fund
+        run: npm install --legacy-peer-deps --no-audit --no-fund
       - name: Commit the lockfile and remove this one-time bootstrap workflow
         run: |
           git config user.name "github-actions[bot]"
