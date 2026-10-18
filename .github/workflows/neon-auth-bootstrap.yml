@@ -1,0 +1,35 @@
+name: Refresh Neon Auth lockfile and build check
+
+on:
+  push:
+    branches: [feat/neon-auth-integration]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    if: ${{ !contains(github.event.head_commit.message, '[lock-refresh]') }}
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?sslmode=require
+      NEON_AUTH_BASE_URL: https://example.neonauth.invalid/neondb/auth
+      NEON_AUTH_COOKIE_SECRET: ci-only-secret-string-more-than-32-characters
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm view @neondatabase/auth@0.4.2-beta peerDependencies --json
+      - run: npm install --no-audit --no-fund
+      - name: Commit lockfile and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git rm .github/workflows/neon-auth-bootstrap.yml
+          git commit -m "chore: update Neon Auth lockfile [lock-refresh]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+      - run: npm run build
