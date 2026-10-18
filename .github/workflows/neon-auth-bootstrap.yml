@@ -22,8 +22,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm view @neondatabase/auth@0.3.0-beta peerDependencies --json
-      - run: npm install --no-audit --no-fund
+      - name: Verify supported peer dependencies
+        run: npm view @neondatabase/auth@0.6.0-beta peerDependencies --json
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
       - name: Commit lockfile and remove temporary workflow
         run: |
           git config user.name "github-actions[bot]"
@@ -32,4 +34,5 @@ jobs:
           git rm .github/workflows/neon-auth-bootstrap.yml
           git commit -m "chore: update Neon Auth lockfile [lock-refresh]"
           git push origin "HEAD:${GITHUB_REF_NAME}"
-      - run: npm run build
+      - name: Build application
+        run: npm run build
