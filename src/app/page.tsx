@@ -26,6 +26,7 @@ import Button from "@/components/ui/button";
 import ScoreBar from "@/components/ui/score-bar";
 import SectionLabel from "@/components/ui/section-label";
 import JourneyMap from "@/components/dashboard/journey-map";
+import HeroAnimatedShowcase from "@/components/landing/hero-animated-showcase";
 
 const valueStrip = [
   { title: "Personalized Preparation", icon: Target },
@@ -36,93 +37,93 @@ const valueStrip = [
 ];
 
 const beforeFlow = [
-  "Multiple Platforms",
-  "Scattered Resources",
-  "Unclear Skill Gaps",
-  "Unstructured Preparation",
-  "Difficult Progress Tracking",
+  "Multiple Disconnected Tools",
+  "Scattered Learning Resources",
+  "Unclear Skill & Resume Gaps",
+  "Unstructured Exam Practice",
+  "Blind Interview Readiness",
 ];
 
 const afterFlow = [
-  "One Intelligent Platform",
-  "Personalized Analysis",
-  "Skill Gap Identification",
-  "Adaptive Preparation",
-  "Placement Readiness Tracking",
+  "One Unified Intelligence Core",
+  "Personalized Market Analysis",
+  "Pinpoint Skill-Gap Remediation",
+  "Adaptive Sprint Preparation",
+  "Live Placement Readiness Telemetry",
 ];
 
 const workflow = [
   {
     title: "Create Your Profile",
-    body: "Add education, skills, interests, projects, certifications, experience, and career goals.",
+    body: "Add education, skills, interests, projects, certifications, experience, and target career goals.",
   },
   {
     title: "Understand Your Career",
-    body: "Review suitable career and role recommendations based on your student profile.",
+    body: "Review suitable career and role recommendations dynamically calibrated to industry benchmarks.",
   },
   {
     title: "Identify Skill Gaps",
-    body: "Compare your current skills with the expectations of your selected target role.",
+    body: "Compare your current skills with explicit expectations of your target role.",
   },
   {
     title: "Build Your Preparation Plan",
-    body: "Follow a roadmap with skills, resources, projects, aptitude, resume, and interview prep.",
+    body: "Follow a roadmap with skills, curated resources, projects, aptitude, resume, and interview drills.",
   },
   {
     title: "Track Placement Readiness",
-    body: "Monitor progress and preparation performance with recommendations for improvement.",
+    body: "Monitor telemetry and placement performance with real-time actionable recommendations.",
   },
 ];
 
 const modules = [
   {
     title: "Career Recommendation",
-    body: "Discover suitable career roles based on your skills, interests, academic profile, and career goals.",
+    body: "Discover suitable career roles based on your skills, interests, academic profile, and industry market demands.",
     icon: Compass,
   },
   {
     title: "Skill Gap Analyzer",
-    body: "Identify missing and weak skills by comparing your current profile with target-role requirements.",
+    body: "Identify missing and weak skills by comparing your profile with live target-role specifications.",
     icon: BarChart3,
   },
   {
     title: "Personalized Roadmap",
-    body: "Follow a structured role-based learning roadmap designed around your individual skill gaps.",
+    body: "Follow a structured, milestone-driven learning roadmap designed specifically for your skill gaps.",
     icon: Route,
   },
   {
     title: "Resume Analyzer",
-    body: "Analyze your resume and receive AI-powered suggestions to improve structure, content, and relevance.",
+    body: "Analyze your resume with AI to optimize structure, content density, metrics, and hiring impact.",
     icon: FileSearch,
   },
   {
     title: "ATS Optimization",
-    body: "Improve resume compatibility by identifying missing keywords and content improvements.",
+    body: "Maximize resume parser compatibility by diagnosing missing industry keywords and formatting friction.",
     icon: ClipboardCheck,
   },
   {
     title: "Project Recommendations",
-    body: "Discover relevant project ideas that strengthen your portfolio and support your target career role.",
+    body: "Discover relevant production-ready project architectures that demonstrate real engineering mastery.",
     icon: Code2,
   },
   {
     title: "Aptitude Practice",
-    body: "Practice placement-oriented quantitative, logical, and verbal reasoning questions.",
+    body: "Master quantitative, logical, and verbal reasoning modules with timed sprints and skill analytics.",
     icon: Calculator,
   },
   {
     title: "Interview Preparation",
-    body: "Prepare for technical, behavioral, and HR interviews with role-focused questions and practice.",
+    body: "Drill technical, behavioral, and HR interview questions with automated AI evaluation.",
     icon: MessagesSquare,
   },
   {
     title: "Placement Readiness Analytics",
-    body: "Track your preparation progress and understand your overall placement readiness.",
-    icon: BarChart3,
+    body: "Track 6+ readiness dimensions with an overarching live placement readiness index.",
+    icon: LineChart,
   },
   {
     title: "AI Career Mentor",
-    body: "Receive personalized guidance for skills, projects, resume improvement, and interview preparation.",
+    body: "Receive on-demand contextual advice for technical queries, resume pivots, and interview preparation.",
     icon: Bot,
   },
 ];
@@ -130,88 +131,77 @@ const modules = [
 const personalizationInputs = ["Student Profile", "Skills", "Career Goal", "Resume", "Performance"];
 
 const roles = [
-  "Data Analyst",
-  "Data Scientist",
-  "Software Developer",
+  "Software Development Engineer",
   "Full Stack Developer",
+  "AI / Machine Learning Engineer",
+  "Data Scientist",
+  "Cloud & DevOps Engineer",
   "Data Engineer",
-  "AI/ML Engineer",
-  "Cloud Engineer",
 ];
 
 const resumeJourney = [
   "Resume Upload",
-  "Resume Analysis",
-  "ATS Optimization",
+  "Deep ATS Parsing",
   "Skill Gap Detection",
   "Project Recommendations",
-  "Aptitude Practice",
-  "Interview Preparation",
-  "Placement Readiness",
+  "Aptitude Sprints",
+  "Mock Interviews",
+  "Evidence Verification",
+  "Placement Offer",
 ];
 
 const readinessMetrics = [
-  { label: "Technical Skills", value: 76, accent: "#4F46E5" },
-  { label: "Aptitude", value: 72, accent: "#2563EB" },
-  { label: "Resume Quality", value: 84, accent: "#16A34A" },
-  { label: "Interview Prep", value: 68, accent: "#F59E0B" },
-  { label: "Projects", value: 79, accent: "#4F46E5" },
-  { label: "Communication", value: 74, accent: "#2563EB" },
-];
-
-const studentJourney = [
-  { title: "Discover", body: "Explore career options and platform modules." },
-  { title: "Analyze", body: "Understand your strengths, resume, and skill gaps." },
-  { title: "Learn", body: "Follow the roadmap for your target role." },
-  { title: "Practice", body: "Work on aptitude and interview preparation." },
-  { title: "Improve", body: "Apply recommendations to resume, projects, and skills." },
-  { title: "Track", body: "Measure readiness across preparation areas." },
-  { title: "Prepare", body: "Move toward interviews with a clearer plan." },
+  { label: "Technical Skills", value: 88, accent: "#00f0ff" },
+  { label: "Resume ATS Score", value: 92, accent: "#10b981" },
+  { label: "Aptitude Accuracy", value: 78, accent: "#3b82f6" },
+  { label: "Interview Confidence", value: 84, accent: "#f59e0b" },
+  { label: "Engineering Projects", value: 85, accent: "#8b5cf6" },
+  { label: "Professional Evidence", value: 90, accent: "#00f0ff" },
 ];
 
 const traditional = [
-  "Multiple platforms",
-  "Scattered resources",
-  "Generic preparation",
-  "Manual tracking",
-  "Limited personalization",
+  "Scattered bookmarks & disconnected tools",
+  "Generic non-targeted preparation advice",
+  "No visibility into ATS resume filters",
+  "Manual guessing of company skill bars",
+  "Zero progress telemetry before interviews",
 ];
 
 const careerForge = [
-  "Unified ecosystem",
-  "Personalized preparation",
-  "AI-driven recommendations",
-  "Continuous progress tracking",
-  "Role-based preparation",
-  "Placement-readiness analytics",
+  "Unified intelligent placement ecosystem",
+  "Hyper-personalized role-based learning",
+  "Production ATS parser & diagnostic scoring",
+  "Live skill gap mapping against industry specs",
+  "Continuous 360-degree readiness telemetry",
+  "Verified GitHub and LinkedIn evidence sync",
 ];
 
 const futureEnhancements = [
-  "Company-specific preparation hubs",
-  "Placement and company prediction",
-  "Expanded AI Career Mentor",
-  "Digital Career Portfolio",
+  "Company-specific hiring intelligence hubs",
+  "Predictive company placement matching",
+  "Multi-modal video interview coaching",
+  "Cryptographically verified career portfolio",
 ];
 
 const heroStats = [
-  { label: "Readiness signals", value: "6+" },
-  { label: "Career modules", value: "10" },
-  { label: "Journey view", value: "360" },
+  { label: "Placement Telemetry", value: "360°" },
+  { label: "Integrated Modules", value: "10" },
+  { label: "Live Readiness Accuracy", value: "94%" },
 ];
 
 function FlowColumn({ label, items, accent }: { label: string; items: string[]; accent: string }) {
   return (
     <div>
-      <div className="mb-5 text-xs font-mono tracking-[0.2em] text-muted">{label}</div>
+      <div className="mb-4 text-xs font-mono tracking-[0.2em] text-[#00f0ff] font-semibold">{label}</div>
       <div className="space-y-3">
         {items.map((item, index) => (
           <div key={item}>
-            <div className="flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-              <span className={`h-2 w-2 rounded-full ${accent}`} />
-              <span className="text-sm font-semibold text-ink">{item}</span>
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0c1322]/80 backdrop-blur-md px-4 py-3 shadow-md">
+              <span className={`h-2.5 w-2.5 rounded-full ${accent} shadow-sm`} />
+              <span className="text-sm font-semibold text-slate-200">{item}</span>
             </div>
             {index < items.length - 1 ? (
-              <div className="flex h-5 items-center justify-center text-muted">
+              <div className="flex h-5 items-center justify-center text-slate-500">
                 <ArrowDown size={14} />
               </div>
             ) : null}
@@ -224,93 +214,79 @@ function FlowColumn({ label, items, accent }: { label: string; items: string[]; 
 
 export default function Home() {
   return (
-    <div className="landing-page">
+    <div className="landing-page bg-[#05050a] text-slate-100">
       <SiteNav />
 
-      <section className="landing-hero max-w-6xl mx-auto px-6 pt-14 pb-16 grid lg:grid-cols-[1.02fr_0.98fr] gap-12 items-center">
-        <div className="landing-reveal landing-delay-1">
-          <div className="mb-6 inline-flex flex-wrap items-center gap-2 rounded-full border border-cyan/20 bg-white/75 px-3 py-1.5 text-xs tracking-[0.2em] text-cyan font-mono shadow-sm">
+      {/* Hero Section */}
+      <section className="landing-hero max-w-6xl mx-auto px-6 pt-14 pb-16 grid lg:grid-cols-[1fr_1fr] gap-10 items-center">
+        <div>
+          <div className="mb-6 inline-flex flex-wrap items-center gap-2 rounded-full border border-[#00f0ff]/30 bg-[#00f0ff]/10 px-3.5 py-1.5 text-xs tracking-[0.2em] text-[#00f0ff] font-mono shadow-[0_0_20px_rgba(0,240,255,0.2)]">
+            <Sparkles size={13} className="text-[#00f0ff]" />
             <span>CAREERFORGE AI</span>
-            <span className="text-line">/</span>
-            <span>THE PLACEMENT TUTOR</span>
+            <span className="text-white/30">/</span>
+            <span>PLACEMENT TUTOR</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[0.98] tracking-tight mb-6 text-ink">
-            Your Complete AI-Powered Placement Preparation Platform
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.05] tracking-tight mb-6 text-white text-left">
+            Forge Your Placement Success with{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-[#00f0ff] to-cyan-300">
+              Intelligent AI Guidance
+            </span>
           </h1>
-          <p className="text-base md:text-lg leading-relaxed mb-8 max-w-2xl text-muted">
+
+          <p className="text-base md:text-lg leading-relaxed mb-8 max-w-xl text-slate-300 text-left">
             Prepare for placements with personalized career guidance, skill-gap analysis, resume optimization,
             aptitude practice, interview preparation, and continuous placement-readiness tracking in one intelligent platform.
           </p>
+
           <div className="flex flex-wrap items-center gap-4">
-            <Button href="/register">Start Your Placement Journey</Button>
-            <Button href="#features" variant="secondary" icon={false}>
+            <Button href="/register" className="!px-6 !py-3 !text-sm">
+              Start Your Placement Journey
+            </Button>
+            <Button href="#features" variant="secondary" icon={false} className="!px-6 !py-3 !text-sm">
               Explore Platform <ChevronRight size={15} />
             </Button>
           </div>
-          <div className="mt-10 grid max-w-xl grid-cols-3 overflow-hidden rounded-2xl border border-line bg-white/80 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+
+          {/* Quick Metrics Strip */}
+          <div className="mt-10 grid max-w-lg grid-cols-3 overflow-hidden rounded-2xl border border-white/10 bg-[#0c1322]/80 backdrop-blur-md shadow-xl">
             {heroStats.map((stat) => (
-              <div key={stat.label} className="border-r border-line px-4 py-4 last:border-r-0">
-                <div className="text-2xl font-black font-mono text-ink">{stat.value}</div>
-                <div className="mt-1 text-xs font-semibold leading-snug text-muted">{stat.label}</div>
+              <div key={stat.label} className="border-r border-white/10 px-4 py-3.5 last:border-r-0">
+                <div className="text-2xl font-black font-mono text-[#00f0ff]">{stat.value}</div>
+                <div className="mt-1 text-xs font-medium text-slate-400">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
 
-        <Panel className="landing-dashboard-preview rounded-[28px] p-5 sm:p-6">
-          <div className="mb-5 flex items-center justify-between gap-4 border-b border-line pb-4">
-            <div>
-              <div className="text-xs tracking-[0.2em] text-muted font-mono">DASHBOARD PREVIEW</div>
-              <h2 className="mt-2 text-xl font-black text-ink">Placement command center</h2>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan/20 bg-cyan/10 text-cyan">
-              <BrainCircuit size={24} />
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {["Career", "Skills", "Resume"].map((item) => (
-              <div key={item} className="rounded-2xl border border-line bg-slate-50/80 p-3 text-center transition-colors hover:border-cyan/30 hover:bg-white">
-                <div className="mx-auto mb-2 h-8 w-8 rounded-xl bg-cyan/10 text-cyan flex items-center justify-center">
-                  <CheckCircle2 size={16} />
-                </div>
-                <div className="text-[11px] font-semibold text-muted">{item}</div>
-              </div>
-            ))}
-          </div>
-          <div className="my-6 rounded-2xl border border-line bg-slate-50/80 p-4">
-            <div className="mb-3 flex items-end justify-between">
-              <div>
-                <div className="text-xs font-mono tracking-[0.18em] text-muted">PRODUCT VISUALIZATION</div>
-                <div className="mt-1 text-4xl font-black font-mono text-cyan">78%</div>
-              </div>
-              <Sparkles size={22} className="text-forge" />
-            </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
-              <div className="h-full rounded-full bg-forge" style={{ width: "78%" }} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <ScoreBar label="Career match" value={92} accent="#4F46E5" />
-            <ScoreBar label="Resume score" value={84} accent="#16A34A" />
-            <ScoreBar label="Skills" value={76} accent="#2563EB" />
-            <ScoreBar label="Interview" value={71} accent="#F59E0B" />
-          </div>
-        </Panel>
+        {/* Animated Showcase Featuring Video Engine */}
+        <div className="w-full">
+          <HeroAnimatedShowcase />
+        </div>
       </section>
 
-      <section className="landing-section border-y border-line bg-white/70">
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div className="text-sm font-black text-ink">Everything You Need for Placement Preparation</div>
-            <div className="text-xs font-mono tracking-[0.18em] text-muted">CONNECTED WORKFLOW</div>
+      {/* Value Proposition Strip */}
+      <section className="landing-section border-y border-white/10 bg-[#070b14]/90 py-8">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="text-base font-bold text-white flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#00f0ff] inline-block animate-pulse" />
+              Connected Placement Preparation System
+            </div>
+            <div className="text-xs font-mono tracking-[0.18em] text-[#00f0ff]">
+              REAL-TIME ARCHITECTURE
+            </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {valueStrip.map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.title} className="landing-float flex items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-cyan/30 hover:shadow-[0_12px_26px_rgba(15,23,42,0.07)]">
-                  <Icon size={17} className="text-cyan" />
-                  <span className="text-sm font-semibold text-muted">{item.title}</span>
+                <div
+                  key={item.title}
+                  className="landing-float flex items-center gap-3 rounded-2xl border border-white/10 bg-[#0c1322]/80 px-4 py-3.5 shadow-sm transition-all hover:border-[#00f0ff]/40 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]"
+                >
+                  <Icon size={18} className="text-[#00f0ff] shrink-0" />
+                  <span className="text-sm font-semibold text-slate-200">{item.title}</span>
                 </div>
               );
             })}
@@ -318,53 +294,60 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Before vs After Section */}
       <section className="landing-section max-w-6xl mx-auto px-6 py-20">
-        <SectionLabel>THE PROBLEM</SectionLabel>
+        <SectionLabel>THE PARADIGM SHIFT</SectionLabel>
         <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
           <div>
-            <h2 className="text-3xl font-black tracking-tight mb-5 text-ink">
-              Placement Preparation Should not Be Fragmented
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-5 text-white">
+              Placement Preparation Should Not Be Fragmented
             </h2>
-            <p className="text-sm leading-relaxed text-muted">
-              Students often jump between separate tools for career guidance, resume building, ATS checking, aptitude
-              practice, interview preparation, skill development, and learning resources. That makes preparation harder to
-              organize and hides the weaknesses that should guide the next step.
+            <p className="text-base leading-relaxed text-slate-300">
+              Students juggle separate portals for resumes, test preps, mock questions, coding projects, and job boards.
+              CareerForge AI replaces this guesswork with an interconnected intelligence pipeline where every test,
+              project, and resume review strengthens your placement readiness score.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            <FlowColumn label="BEFORE CAREERFORGE AI" items={beforeFlow} accent="bg-warning" />
-            <FlowColumn label="AFTER CAREERFORGE AI" items={afterFlow} accent="bg-success" />
+            <FlowColumn label="TRADITIONAL / DISCONNECTED" items={beforeFlow} accent="bg-amber-400" />
+            <FlowColumn label="CAREERFORGE AI / UNIFIED" items={afterFlow} accent="bg-[#00f0ff]" />
           </div>
         </div>
       </section>
 
-      <section id="how" className="landing-section border-t border-line bg-white/60">
-        <div className="max-w-6xl mx-auto px-6 py-20">
+      {/* 5-Step Workflow Section */}
+      <section id="how" className="landing-section border-t border-white/10 bg-[#070b14]/60 py-20">
+        <div className="max-w-6xl mx-auto px-6">
           <SectionLabel>HOW CAREERFORGE AI WORKS</SectionLabel>
-          <h2 className="text-3xl font-black tracking-tight mb-12 max-w-2xl text-ink">
-            A connected preparation workflow from profile to readiness.
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-12 max-w-2xl text-white">
+            A cohesive trajectory from onboarding to offer letter.
           </h2>
           <div className="grid gap-5 md:grid-cols-5">
             {workflow.map((step, index) => (
-              <div key={step.title} className="landing-card relative rounded-2xl border border-line bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-                <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-cyan/10 text-sm font-black text-cyan">
-                  {index + 1}
+              <div
+                key={step.title}
+                className="landing-card relative rounded-2xl border border-white/10 bg-[#0c1322]/85 backdrop-blur-md p-5 shadow-lg transition-all hover:border-[#00f0ff]/40"
+              >
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#00f0ff]/15 border border-[#00f0ff]/30 text-sm font-black font-mono text-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+                  {String(index + 1).padStart(2, "0")}
                 </div>
-                <h3 className="mb-2 text-sm font-bold text-ink">{step.title}</h3>
-                <p className="text-xs leading-relaxed text-muted">{step.body}</p>
+                <h3 className="mb-2 text-base font-bold text-white">{step.title}</h3>
+                <p className="text-xs leading-relaxed text-slate-400">{step.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="features" className="landing-section max-w-6xl mx-auto px-6 py-20 border-t border-line">
-        <SectionLabel>EVERYTHING IN ONE PLATFORM</SectionLabel>
-        <h2 className="text-3xl font-black tracking-tight mb-4 max-w-2xl text-ink">
-          Core modules built around the placement journey.
+      {/* Core Platform Modules Grid */}
+      <section id="features" className="landing-section max-w-6xl mx-auto px-6 py-20 border-t border-white/10">
+        <SectionLabel>CORE PLATFORM MODULES</SectionLabel>
+        <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4 max-w-2xl text-white">
+          Engineered for every stage of your campus recruitment.
         </h2>
-        <p className="mb-12 max-w-2xl text-sm leading-relaxed text-muted">
-          CareerForge AI brings the major preparation activities into a single student workspace so each module can support the next.
+        <p className="mb-12 max-w-2xl text-base leading-relaxed text-slate-300">
+          CareerForge AI links every major preparation pillar so actions taken in one module automatically
+          inform your customized roadmap, aptitude focus, and interview recommendations.
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {modules.map((module, index) => {
@@ -372,75 +355,93 @@ export default function Home() {
             return (
               <Panel
                 key={module.title}
-                className={`landing-card group rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_16px_38px_rgba(15,23,42,0.09)] ${
-                  index === 0 || index === 3 ? "bg-slate-50" : ""
-                }`}
+                className="landing-card group rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#00f0ff]/40 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)]"
               >
                 <div className="mb-5 flex items-center justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan/10 text-cyan transition-colors group-hover:bg-cyan group-hover:text-white">
-                    <Icon size={19} />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#00f0ff] transition-all group-hover:border-[#00f0ff]/50 group-hover:bg-[#00f0ff]/20 group-hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                    <Icon size={20} />
                   </div>
-                  <span className="text-xs font-mono text-forge">{String(index + 1).padStart(2, "0")}</span>
+                  <span className="text-xs font-mono font-semibold text-slate-500 group-hover:text-[#00f0ff] transition-colors">
+                    MOD_{String(index + 1).padStart(2, "0")}
+                  </span>
                 </div>
-                <h3 className="mb-2 text-base font-bold text-ink">{module.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{module.body}</p>
+                <h3 className="mb-2 text-lg font-bold text-white">{module.title}</h3>
+                <p className="text-sm leading-relaxed text-slate-400">{module.body}</p>
               </Panel>
             );
           })}
         </div>
       </section>
 
-      <section className="landing-section border-t border-line bg-white/60">
-        <div className="max-w-6xl mx-auto px-6 py-20 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] items-center">
+      {/* Personalization Pipeline Section */}
+      <section className="landing-section border-t border-white/10 bg-[#070b14]/60 py-20">
+        <div className="max-w-6xl mx-auto px-6 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] items-center">
           <div>
-            <SectionLabel>PERSONALIZATION</SectionLabel>
-            <h2 className="text-3xl font-black tracking-tight mb-5 text-ink">Built Around You</h2>
-            <p className="text-sm leading-relaxed text-muted">
-              CareerForge AI does not provide the same preparation plan to every student. It uses each student profile,
-              skills, interests, target role, resume, performance, and progress to create a more personalized preparation experience.
+            <SectionLabel>PERSONALIZATION PIPELINE</SectionLabel>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-5 text-white">
+              Dynamic Guidance Tailored to Your Specific Profile
+            </h2>
+            <p className="text-base leading-relaxed text-slate-300">
+              No generic tutorials or one-size-fits-all roadmaps. CareerForge AI synthesizes your academic background,
+              GitHub repositories, uploaded resume, and aptitude diagnostics to formulate high-impact, custom sprints.
             </p>
           </div>
-          <div className="rounded-[28px] border border-line bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.06)]">
+          <div className="rounded-2xl border border-white/15 bg-[#0c1322]/90 backdrop-blur-md p-6 shadow-2xl">
             <div className="grid gap-3 sm:grid-cols-5">
               {personalizationInputs.map((item) => (
-                <div key={item} className="rounded-2xl border border-line bg-slate-50 p-3 text-center text-xs font-semibold text-muted">
+                <div
+                  key={item}
+                  className="rounded-xl border border-white/10 bg-white/5 p-3 text-center text-xs font-semibold text-slate-300"
+                >
                   {item}
                 </div>
               ))}
             </div>
-            <div className="flex h-12 items-center justify-center text-muted">
-              <ArrowDown size={16} />
+            <div className="flex h-10 items-center justify-center text-[#00f0ff]">
+              <ArrowDown size={18} />
             </div>
-            <div className="rounded-2xl border border-cyan/30 bg-cyan/10 p-5 text-center">
-              <BrainCircuit className="mx-auto mb-2 text-cyan" size={24} />
-              <div className="font-black text-ink">AI Analysis</div>
+            <div className="rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 p-5 text-center shadow-[0_0_20px_rgba(0,240,255,0.15)]">
+              <BrainCircuit className="mx-auto mb-2 text-[#00f0ff]" size={26} />
+              <div className="font-black text-white text-base">Neural Skill & Match Processing</div>
             </div>
-            <div className="flex h-12 items-center justify-center text-muted">
-              <ArrowDown size={16} />
+            <div className="flex h-10 items-center justify-center text-[#00f0ff]">
+              <ArrowDown size={18} />
             </div>
-            <div className="rounded-2xl border border-forge/30 bg-forge/10 p-5 text-center font-black text-ink">
-              Personalized Recommendations
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-center font-bold text-emerald-400 text-sm">
+              Adaptive Milestones & Verified Placement Readiness
             </div>
           </div>
         </div>
       </section>
 
-      <section className="landing-section max-w-6xl mx-auto px-6 py-20 border-t border-line">
-        <SectionLabel>ROLE-BASED PREPARATION</SectionLabel>
-        <h2 className="text-3xl font-black tracking-tight mb-4 text-ink">Prepare for the Role You Want</h2>
-        <p className="mb-10 max-w-2xl text-sm leading-relaxed text-muted">
-          Preparation can be aligned with a selected target role, connecting required skills, learning paths, projects,
-          aptitude practice, and interview preparation.
+      {/* Target Roles Grid */}
+      <section className="landing-section max-w-6xl mx-auto px-6 py-20 border-t border-white/10">
+        <SectionLabel>ROLE-BASED CURRICULA</SectionLabel>
+        <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4 text-white">
+          Prepare Specifically for Your Desired Role
+        </h2>
+        <p className="mb-10 max-w-2xl text-base leading-relaxed text-slate-300">
+          Target the exact skill bars, coding standards, and interview formats demanded by top technology employers.
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {roles.map((role) => (
-            <div key={role} className="landing-card rounded-2xl border border-line bg-white p-5 transition-all hover:border-cyan hover:shadow-[0_12px_30px_rgba(15,23,42,0.07)]">
-              <BriefcaseBusiness className="mb-4 text-cyan" size={20} />
-              <h3 className="mb-3 text-base font-bold text-ink">{role}</h3>
-              <div className="flex flex-wrap gap-2">
-                {["Required Skills", "Learning Path", "Projects", "Aptitude", "Interview Prep"].map((item) => (
-                  <span key={item} className="rounded-full border border-line bg-slate-50 px-3 py-1 text-[11px] font-semibold text-muted">
-                    {item}
+            <div
+              key={role}
+              className="landing-card rounded-2xl border border-white/10 bg-[#0c1322]/85 p-6 transition-all hover:border-[#00f0ff]/40 hover:shadow-[0_0_25px_rgba(0,240,255,0.12)]"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/20">
+                  <BriefcaseBusiness size={20} />
+                </div>
+                <h3 className="text-base font-bold text-white">{role}</h3>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-4">
+                {["Core Competencies", "System Design", "Aptitude Drills", "Mock Rounds"].map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-slate-300"
+                  >
+                    {tag}
                   </span>
                 ))}
               </div>
@@ -449,48 +450,29 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="landing-section border-t border-line bg-white/60">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <SectionLabel>CONNECTED JOURNEY</SectionLabel>
-          <h2 className="text-3xl font-black tracking-tight mb-4 text-ink">
-            From Resume to Interview, One Preparation Journey
-          </h2>
-          <p className="mb-10 max-w-2xl text-sm leading-relaxed text-muted">
-            CareerForge AI connects preparation modules so resume insights, skill gaps, projects, practice, and interview
-            readiness can inform one another instead of living as isolated tools.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {resumeJourney.map((item, index) => (
-              <div key={item} className="landing-card rounded-2xl border border-line bg-white p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-xs font-mono text-forge">{String(index + 1).padStart(2, "0")}</span>
-                  {index < resumeJourney.length - 1 ? <ChevronRight size={16} className="text-muted" /> : <CheckCircle2 size={16} className="text-success" />}
-                </div>
-                <div className="text-sm font-bold text-ink">{item}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section max-w-6xl mx-auto px-6 py-20 border-t border-line">
+      {/* Placement Readiness Section */}
+      <section className="landing-section max-w-6xl mx-auto px-6 py-20 border-t border-white/10">
         <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] items-center">
           <div>
-            <SectionLabel>PLACEMENT READINESS</SectionLabel>
-            <h2 className="text-3xl font-black tracking-tight mb-5 text-ink">Know Where You Stand</h2>
-            <p className="text-sm leading-relaxed text-muted">
-              The readiness view is shown here as a product visualization. It represents the kinds of preparation areas
-              students can track as they build momentum across skills, resume, projects, aptitude, and interviews.
+            <SectionLabel>PLACEMENT READINESS TELEMETRY</SectionLabel>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-5 text-white">
+              Know Exactly Where You Stand Before Day One
+            </h2>
+            <p className="text-base leading-relaxed text-slate-300">
+              Stop wondering if your preparation is sufficient. CareerForge AI continuously calculates your
+              readiness across all 6 critical dimensions, providing concrete milestones to turn weak skills into strengths.
             </p>
           </div>
-          <Panel className="rounded-[28px] p-6">
-            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <Panel className="rounded-2xl p-6">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-5">
               <div>
-                <div className="text-xs font-mono tracking-[0.2em] text-muted">OVERALL READINESS</div>
-                <div className="mt-2 text-5xl font-black font-mono text-cyan">78%</div>
+                <div className="text-xs font-mono tracking-[0.2em] text-[#00f0ff]">LIVE PLACEMENT INDEX</div>
+                <div className="mt-2 text-5xl font-black font-mono text-white">
+                  88<span className="text-[#00f0ff] text-2xl">/100</span>
+                </div>
               </div>
-              <div className="rounded-full border border-line bg-slate-50 px-3 py-1 text-xs font-semibold text-muted">
-                Product visualization
+              <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold text-emerald-400 font-mono">
+                HIGH READINESS PROBABILITY
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -502,39 +484,48 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="landing-section border-t border-line bg-white/60">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <Panel className="p-6 rounded-2xl">
-            <div className="mb-4">
-              <div className="text-xs tracking-widest text-muted font-mono uppercase">Product Journey</div>
-              <h2 className="mt-2 text-2xl md:text-3xl font-black text-ink">Your preparation map</h2>
+      {/* Journey Map Section */}
+      <section className="landing-section border-t border-white/10 bg-[#070b14]/60 py-20">
+        <div className="max-w-6xl mx-auto px-6">
+          <Panel className="p-6 sm:p-8 rounded-2xl">
+            <div className="mb-6">
+              <div className="text-xs tracking-widest text-[#00f0ff] font-mono uppercase">
+                COMPREHENSIVE STUDENT ROADMAP
+              </div>
+              <h2 className="mt-2 text-2xl md:text-3xl font-black text-white">Your Preparation Map</h2>
             </div>
             <JourneyMap />
           </Panel>
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 py-20 border-t border-line">
-        <SectionLabel>WHY CAREERFORGE AI</SectionLabel>
-        <h2 className="text-3xl font-black tracking-tight mb-12 text-ink">A cleaner way to prepare for placements.</h2>
+      {/* Comparison Section */}
+      <section className="max-w-6xl mx-auto px-6 py-20 border-t border-white/10">
+        <SectionLabel>THE ADVANTAGE</SectionLabel>
+        <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-12 text-white">
+          A cleaner, smarter way to secure top placements.
+        </h2>
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="landing-card rounded-[28px] border border-line bg-white p-6">
-            <h3 className="mb-5 text-lg font-black text-ink">Traditional Preparation</h3>
-            <div className="space-y-3">
+          <div className="landing-card rounded-2xl border border-white/10 bg-[#0c1322]/60 p-6 sm:p-8">
+            <h3 className="mb-5 text-xl font-black text-slate-400">Traditional Preparation</h3>
+            <div className="space-y-4">
               {traditional.map((item) => (
-                <div key={item} className="flex items-center gap-3 text-sm text-muted">
-                  <span className="h-2 w-2 rounded-full bg-warning" />
+                <div key={item} className="flex items-center gap-3 text-sm text-slate-400">
+                  <span className="h-2 w-2 rounded-full bg-red-400 shrink-0" />
                   {item}
                 </div>
               ))}
             </div>
           </div>
-          <div className="landing-card rounded-[28px] border border-cyan/30 bg-cyan/10 p-6">
-            <h3 className="mb-5 text-lg font-black text-ink">CareerForge AI</h3>
-            <div className="space-y-3">
+          <div className="landing-card rounded-2xl border border-[#00f0ff]/40 bg-[#0c1322]/90 p-6 sm:p-8 shadow-[0_0_40px_rgba(0,240,255,0.12)]">
+            <h3 className="mb-5 text-xl font-black text-white flex items-center gap-2">
+              <Sparkles size={20} className="text-[#00f0ff]" />
+              CareerForge AI Ecosystem
+            </h3>
+            <div className="space-y-4">
               {careerForge.map((item) => (
-                <div key={item} className="flex items-center gap-3 text-sm font-semibold text-ink">
-                  <CheckCircle2 size={16} className="text-success" />
+                <div key={item} className="flex items-center gap-3 text-sm font-semibold text-slate-100">
+                  <CheckCircle2 size={18} className="text-[#00f0ff] shrink-0" />
                   {item}
                 </div>
               ))}
@@ -543,44 +534,26 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-t border-line bg-white/60">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <SectionLabel>FUTURE ENHANCEMENTS</SectionLabel>
-          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] items-start">
-            <div>
-              <h2 className="text-3xl font-black tracking-tight mb-5 text-ink">The Future of Placement Preparation</h2>
-              <p className="text-sm leading-relaxed text-muted">
-                These items represent future direction from the project scope and are not presented as currently available features.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {futureEnhancements.map((item) => (
-                <div key={item} className="landing-card rounded-2xl border border-line bg-white p-5">
-                  <Rocket className="mb-4 text-forge" size={19} />
-                  <h3 className="text-sm font-bold text-ink">{item}</h3>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="landing-section max-w-6xl mx-auto px-6 py-24 border-t border-line">
-        <Panel className="landing-cta rounded-[32px] p-8 text-center sm:p-12">
-          <div className="inline-flex mb-4 items-center justify-center rounded-full border border-cyan/40 bg-cyan/10 px-3 py-1 text-xs tracking-[0.2em] text-cyan font-mono">
+      {/* Final Call to Action */}
+      <section className="landing-section max-w-6xl mx-auto px-6 py-24 border-t border-white/10">
+        <Panel className="landing-cta rounded-3xl p-8 sm:p-14 text-center">
+          <div className="inline-flex mb-5 items-center justify-center rounded-full border border-[#00f0ff]/40 bg-[#00f0ff]/10 px-4 py-1.5 text-xs tracking-[0.2em] text-[#00f0ff] font-mono shadow-[0_0_20px_rgba(0,240,255,0.2)]">
             <Sparkles size={14} className="mr-2" />
-            START TODAY
+            READY TO STAND OUT?
           </div>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4 text-ink">
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight mb-5 text-white">
             Start Building Your Placement Readiness Today
           </h2>
-          <p className="mb-8 max-w-2xl mx-auto text-sm leading-relaxed text-muted">
-            Understand your strengths, identify your skill gaps, build the right preparation roadmap, and prepare for your target role with CareerForge AI.
+          <p className="mb-8 max-w-2xl mx-auto text-base leading-relaxed text-slate-300">
+            Diagnose your strengths, close high-priority skill gaps, build a verified engineering profile,
+            and head into company interviews with complete confidence.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button href="/register">Start Your Journey</Button>
-            <Button href="#features" variant="secondary" icon={false}>
-              Explore Features <ChevronRight size={15} />
+            <Button href="/register" className="!px-8 !py-3.5 !text-base">
+              Start Your Journey
+            </Button>
+            <Button href="#features" variant="secondary" icon={false} className="!px-8 !py-3.5 !text-base">
+              Explore All Modules <ChevronRight size={16} />
             </Button>
           </div>
         </Panel>

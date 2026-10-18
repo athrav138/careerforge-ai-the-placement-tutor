@@ -100,7 +100,6 @@ export default function Dashboard() {
         if (!response.ok) return;
         setReadiness((await response.json()) as Readiness);
       });
-    // Check professional connections
     Promise.all([
       fetch("/api/github/profile").then(res => ({ github: res.ok })).catch(() => ({ github: false })),
       fetch("/api/linkedin/profile").then(res => ({ linkedin: res.ok })).catch(() => ({ linkedin: false })),
@@ -113,12 +112,7 @@ export default function Dashboard() {
   const skillsScore = summary?.analysis
     ? Math.round((summary.analysis.matchedSkills.length / Math.max(1, summary.analysis.matchedSkills.length + summary.analysis.missingSkills.length)) * 100)
     : Math.min(95, summary ? summary.skillCount * 10 : 0);
-  const stats = [
-    { label: "Readiness", value: summary ? `${Math.round((careerFit + skillsScore) / 2)}%` : "—", detail: "Based on your saved profile", icon: Target, accent: "cyan" as const },
-    { label: "Career fit", value: summary ? `${careerFit}%` : "—", detail: "Based on target role and skills", icon: BriefcaseBusiness, accent: "success" as const },
-    { label: "Resume", value: summary?.resumeScore != null ? `${summary.resumeScore}%` : "—", detail: summary?.resumeScore != null ? "ATS Match Score" : "Add a resume to calculate", icon: FileText, accent: "forge" as const },
-    { label: "Learning", value: roadmap ? `${roadmap.progress}%` : "—", detail: roadmap ? "Roadmap task progress" : "Generate your roadmap", icon: BarChart3, accent: "warning" as const },
-  ];
+
   const dashboardActions = summary?.analysis?.recommendations.length
     ? summary.analysis.recommendations.slice(0, 3).map((recommendation) => ({
         title: recommendation,
@@ -129,29 +123,41 @@ export default function Dashboard() {
     : actions;
 
   const readinessStats = [
-    { label: "Readiness", value: readiness ? `${readiness.overallScore}%` : "--", detail: "Weighted placement preparation score", icon: Target, accent: "cyan" as const },
-    { label: "Resume", value: readiness ? `${readiness.metrics.resume.score}%` : "--", detail: readiness?.metrics.resume.explanation ?? "Add a resume to calculate", icon: FileText, accent: "forge" as const },
-    { label: "Aptitude", value: readiness ? `${readiness.metrics.aptitude.score}%` : "--", detail: readiness?.metrics.aptitude.explanation ?? "Complete an assessment to calculate", icon: LineChart, accent: "success" as const },
-    { label: "Weak skills", value: readiness ? String(readiness.weakSkillCount) : "--", detail: "Skills currently marked weak or critical", icon: BarChart3, accent: "warning" as const },
+    { label: "Readiness Index", value: readiness ? `${readiness.overallScore}%` : "--", detail: "Weighted placement preparation score", icon: Target, accent: "cyan" as const },
+    { label: "Resume ATS Match", value: readiness ? `${readiness.metrics.resume.score}%` : "--", detail: readiness?.metrics.resume.explanation ?? "Add a resume to calculate", icon: FileText, accent: "forge" as const },
+    { label: "Aptitude Mastery", value: readiness ? `${readiness.metrics.aptitude.score}%` : "--", detail: readiness?.metrics.aptitude.explanation ?? "Complete an assessment to calculate", icon: LineChart, accent: "success" as const },
+    { label: "Weak Skills", value: readiness ? String(readiness.weakSkillCount) : "--", detail: "Skills currently marked weak or critical", icon: BarChart3, accent: "warning" as const },
   ];
+
   const actionableItems = readiness?.recommendations.length
     ? readiness.recommendations.slice(0, 3).map((recommendation) => ({ title: recommendation.title, body: recommendation.detail, href: recommendation.href, icon: Target }))
     : dashboardActions;
 
   return (
     <>
-      <DashboardHeader title={`Welcome back, ${userName}`} subtitle="Here's where your placement prep stands." />
+      <DashboardHeader title={`Welcome back, ${userName}`} subtitle="Here's where your placement preparation stands." />
 
+      {/* Main 4 Metric Cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         {readinessStats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
 
-      <Panel className="mb-6 rounded-2xl p-5">
-        <div className="mb-4">
-          <div className="text-xs tracking-widest text-muted font-mono">APTITUDE PERFORMANCE</div>
-          <h2 className="mt-2 text-lg font-black text-ink">Assessment progress</h2>
+      {/* Aptitude Performance Telemetry */}
+      <Panel className="mb-6 rounded-2xl p-6">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <div className="text-xs tracking-widest text-[#00f0ff] font-mono font-semibold">APTITUDE PERFORMANCE</div>
+            <h2 className="mt-2 text-xl font-black text-white">Assessment Telemetry</h2>
+          </div>
+          <Link
+            href="/dashboard/aptitude"
+            className="text-xs text-[#00f0ff] hover:underline flex items-center gap-1 font-mono font-semibold"
+          >
+            <span>Launch Tests</span>
+            <ArrowRight size={14} />
+          </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
@@ -168,76 +174,93 @@ export default function Dashboard() {
               value: String(aptitudeSummary?.testsCompleted ?? 0),
             },
             {
-              label: "Accuracy",
+              label: "Accuracy rate",
               value: aptitudeSummary?.accuracy == null ? "—" : `${aptitudeSummary.accuracy}%`,
             },
           ].map((item) => (
-            <div key={item.label}>
-              <div className="text-xs text-muted">{item.label}</div>
-              <div className="mt-1 text-xl font-black font-mono text-ink">{item.value}</div>
+            <div key={item.label} className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="text-xs text-slate-400 font-medium">{item.label}</div>
+              <div className="mt-1 text-2xl font-black font-mono text-white">{item.value}</div>
             </div>
           ))}
         </div>
       </Panel>
 
-      <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-5 mb-8">
+      {/* Student Profile + Readiness Snapshot */}
+      <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-6 mb-6">
         <ProfileCard />
         <ReadinessPanel readiness={readiness} />
       </div>
 
-      <Panel className="mb-6 rounded-2xl p-5">
-        <div className="mb-4">
-          <div className="text-xs tracking-widest text-muted font-mono">PROFESSIONAL PROFILE</div>
-          <h2 className="mt-2 text-lg font-black text-ink">Connect your professional evidence</h2>
+      {/* Professional Evidence (GitHub & LinkedIn) */}
+      <Panel className="mb-6 rounded-2xl p-6">
+        <div className="mb-5">
+          <div className="text-xs tracking-widest text-[#00f0ff] font-mono font-semibold">PROFESSIONAL EVIDENCE</div>
+          <h2 className="mt-2 text-xl font-black text-white">Connected Portfolios & Profiles</h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className={`rounded-xl border p-4 ${professionalConnections.github ? "border-green-200 bg-green-50" : "border-line bg-slate-50"}`}>
+          <div className={`rounded-xl border p-5 transition-all ${
+            professionalConnections.github
+              ? "border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+              : "border-white/10 bg-white/5"
+          }`}>
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Code2 className={professionalConnections.github ? "text-green-600" : "text-muted"} size={20} />
-                <span className="font-semibold text-ink">GitHub</span>
+              <div className="flex items-center gap-2.5">
+                <Code2 className={professionalConnections.github ? "text-emerald-400" : "text-slate-400"} size={22} />
+                <span className="font-bold text-white text-base">GitHub Portfolio</span>
               </div>
               {professionalConnections.github ? (
-                <CheckCircle2 className="text-green-600" size={18} />
+                <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono font-semibold">
+                  <CheckCircle2 size={16} />
+                  <span>Synchronized</span>
+                </div>
               ) : (
-                <span className="text-xs text-muted">Not connected</span>
+                <span className="text-xs text-slate-400 font-mono">Not connected</span>
               )}
             </div>
-            <p className="text-sm text-muted mb-3">
-              {professionalConnections.github 
-                ? "Your GitHub portfolio is connected and contributing to your readiness score." 
-                : "Connect your GitHub to showcase your technical projects and skills."}
+            <p className="text-sm text-slate-300 mb-4 leading-relaxed">
+              {professionalConnections.github
+                ? "Your GitHub repositories and commit telemetry are actively integrated into your technical readiness score."
+                : "Connect your GitHub account to verify projects, commit frequency, and core language proficiency."}
             </p>
-            <Link 
-              href="/dashboard/github" 
-              className="inline-flex items-center gap-2 text-sm font-semibold text-cyan hover:underline"
+            <Link
+              href="/dashboard/github"
+              className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-[#00f0ff] hover:underline"
             >
-              {professionalConnections.github ? "View GitHub Dashboard" : "Connect GitHub"}
+              <span>{professionalConnections.github ? "View GitHub Telemetry" : "Connect GitHub"}</span>
               <ArrowRight size={14} />
             </Link>
           </div>
-          <div className={`rounded-xl border p-4 ${professionalConnections.linkedin ? "border-green-200 bg-green-50" : "border-line bg-slate-50"}`}>
+
+          <div className={`rounded-xl border p-5 transition-all ${
+            professionalConnections.linkedin
+              ? "border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.15)]"
+              : "border-white/10 bg-white/5"
+          }`}>
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Briefcase className={professionalConnections.linkedin ? "text-green-600" : "text-muted"} size={20} />
-                <span className="font-semibold text-ink">LinkedIn</span>
+              <div className="flex items-center gap-2.5">
+                <Briefcase className={professionalConnections.linkedin ? "text-emerald-400" : "text-slate-400"} size={22} />
+                <span className="font-bold text-white text-base">LinkedIn Profile</span>
               </div>
               {professionalConnections.linkedin ? (
-                <CheckCircle2 className="text-green-600" size={18} />
+                <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono font-semibold">
+                  <CheckCircle2 size={16} />
+                  <span>Imported</span>
+                </div>
               ) : (
-                <span className="text-xs text-muted">Not connected</span>
+                <span className="text-xs text-slate-400 font-mono">Not connected</span>
               )}
             </div>
-            <p className="text-sm text-muted mb-3">
-              {professionalConnections.linkedin 
-                ? "Your LinkedIn profile is imported and contributing to your readiness score." 
-                : "Import your LinkedIn profile to add professional experience and skills."}
+            <p className="text-sm text-slate-300 mb-4 leading-relaxed">
+              {professionalConnections.linkedin
+                ? "Your professional experience, certifications, and endorsements are synced to your career profile."
+                : "Import your LinkedIn profile to validate work history, leadership experience, and endorsements."}
             </p>
-            <Link 
-              href="/dashboard/linkedin" 
-              className="inline-flex items-center gap-2 text-sm font-semibold text-cyan hover:underline"
+            <Link
+              href="/dashboard/linkedin"
+              className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-[#00f0ff] hover:underline"
             >
-              {professionalConnections.linkedin ? "View LinkedIn Dashboard" : "Import LinkedIn"}
+              <span>{professionalConnections.linkedin ? "View LinkedIn Details" : "Import LinkedIn"}</span>
               <ArrowRight size={14} />
             </Link>
           </div>
@@ -246,63 +269,72 @@ export default function Dashboard() {
 
       <WeakSkillsPanel />
 
-      <Panel className="p-6 mb-5 rounded-2xl">
-        <div className="mb-5 flex items-center justify-between gap-3">
+      {/* Component Scores Breakdown */}
+      <Panel className="p-6 mb-6 rounded-2xl">
+        <div className="mb-6 flex items-center justify-between gap-3 border-b border-white/10 pb-4">
           <div>
-            <div className="text-xs tracking-widest text-muted font-mono">COMPONENT SCORES</div>
-            <h2 className="mt-2 text-lg font-black text-ink">Readiness breakdown</h2>
+            <div className="text-xs tracking-widest text-[#00f0ff] font-mono font-semibold">COMPONENT SCORES</div>
+            <h2 className="mt-2 text-xl font-black text-white">Full Preparation Breakdown</h2>
           </div>
-          <BrainCircuit size={22} className="text-cyan" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 text-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+            <BrainCircuit size={20} />
+          </div>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <ScoreBar label="Career match" value={readiness?.metrics.career.score ?? careerFit} accent="#2563EB" />
-          <ScoreBar label="Resume score" value={readiness?.metrics.resume.score ?? 0} accent="#4F46E5" />
-          <ScoreBar label="Technical skills" value={readiness?.metrics.skills.score ?? skillsScore} accent="#16A34A" />
-          <ScoreBar label="Interview" value={readiness?.metrics.interview.score ?? 0} accent="#F59E0B" />
-          <ScoreBar label="Aptitude" value={readiness?.metrics.aptitude.score ?? aptitudeSummary?.latestScore ?? 0} accent="#2563EB" />
-          <ScoreBar label="Learning progress" value={readiness?.metrics.learning.score ?? roadmap?.progress ?? 0} accent="#4F46E5" />
-          <ScoreBar label="Projects" value={readiness?.metrics.projects.score ?? 0} accent="#8B5CF6" />
-          <ScoreBar label="GitHub" value={readiness?.metrics.github.score ?? 0} accent="#6B7280" />
-          <ScoreBar label="LinkedIn" value={readiness?.metrics.linkedin.score ?? 0} accent="#0077B5" />
+          <ScoreBar label="Career Match" value={readiness?.metrics.career.score ?? careerFit} accent="#00f0ff" />
+          <ScoreBar label="Resume ATS" value={readiness?.metrics.resume.score ?? 0} accent="#3b82f6" />
+          <ScoreBar label="Technical Skills" value={readiness?.metrics.skills.score ?? skillsScore} accent="#10b981" />
+          <ScoreBar label="Interview Confidence" value={readiness?.metrics.interview.score ?? 0} accent="#f59e0b" />
+          <ScoreBar label="Aptitude Mastery" value={readiness?.metrics.aptitude.score ?? aptitudeSummary?.latestScore ?? 0} accent="#8b5cf6" />
+          <ScoreBar label="Roadmap Progress" value={readiness?.metrics.learning.score ?? roadmap?.progress ?? 0} accent="#00f0ff" />
+          <ScoreBar label="Engineering Projects" value={readiness?.metrics.projects.score ?? 0} accent="#ec4899" />
+          <ScoreBar label="GitHub Contributions" value={readiness?.metrics.github.score ?? 0} accent="#06b6d4" />
+          <ScoreBar label="LinkedIn Endorsements" value={readiness?.metrics.linkedin.score ?? 0} accent="#0284c7" />
         </div>
       </Panel>
 
-      <Panel className="p-6 mb-5 rounded-2xl">
+      {/* Actionable Recommendations */}
+      <Panel className="p-6 mb-6 rounded-2xl">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <div className="text-xs tracking-widest text-muted font-mono">RECOMMENDED ACTIONS</div>
-            <h2 className="mt-2 text-lg font-black text-ink">Next best moves</h2>
+            <div className="text-xs tracking-widest text-[#00f0ff] font-mono font-semibold">RECOMMENDED ACTIONS</div>
+            <h2 className="mt-2 text-xl font-black text-white">Next Best Moves</h2>
           </div>
-          <CheckCircle2 size={21} className="text-success" />
+          <CheckCircle2 size={22} className="text-emerald-400" />
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {actionableItems.map((action) => {
             const Icon = action.icon;
             return (
-              <Link key={action.title} href={action.href} className="group rounded-2xl border border-line bg-slate-50/80 p-4 transition-all hover:-translate-y-1 hover:border-cyan/35 hover:bg-white">
+              <Link
+                key={action.title}
+                href={action.href}
+                className="group rounded-2xl border border-white/10 bg-white/5 p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[#00f0ff]/40 hover:bg-white/[0.08] hover:shadow-[0_0_20px_rgba(0,240,255,0.12)]"
+              >
                 <div className="mb-4 flex items-center justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan/20 bg-cyan/10 text-cyan">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 text-[#00f0ff]">
                     <Icon size={18} />
                   </div>
-                  <ArrowRight size={16} className="text-muted transition-transform group-hover:translate-x-1 group-hover:text-cyan" />
+                  <ArrowRight size={16} className="text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-[#00f0ff]" />
                 </div>
-                <h3 className="font-bold text-ink">{action.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{action.body}</p>
+                <h3 className="font-bold text-white text-base">{action.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">{action.body}</p>
               </Link>
             );
           })}
         </div>
       </Panel>
 
-      <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
+      {/* Quick Access Grid */}
+      <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         {quickLinks.map((item) => {
           const Icon = item.icon;
           return (
             <Link key={item.href} href={item.href}>
-              <Panel className="rounded-2xl p-5 transition-all hover:-translate-y-1 hover:border-cyan/40">
-                <Icon size={18} className="mb-4 text-cyan" />
-                <div className="text-xs text-muted font-mono mb-1">{item.label}</div>
-                <div className="font-bold text-ink">
+              <Panel className="rounded-2xl p-5 transition-all duration-200 hover:-translate-y-1 hover:border-[#00f0ff]/40 hover:shadow-[0_0_20px_rgba(0,240,255,0.12)]">
+                <Icon size={18} className="mb-3 text-[#00f0ff]" />
+                <div className="text-xs text-slate-400 font-mono mb-1">{item.label}</div>
+                <div className="font-bold text-white text-sm">
                   {item.label === "CAREER MATCH" && summary ? `${careerFit}% fit for ${summary.analysis?.career ?? "your profile"}` : item.label === "TOP GAP" && summary ? summary.analysis?.missingSkills[0] ?? `${summary.skillCount} saved skills` : item.title}
                 </div>
               </Panel>

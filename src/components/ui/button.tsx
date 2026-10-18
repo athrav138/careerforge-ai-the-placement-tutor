@@ -23,11 +23,11 @@ export default function Button({
   onClick,
 }: Props) {
   const base =
-    "text-sm font-semibold px-6 py-3 inline-flex items-center justify-center gap-2 transition-all duration-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-cyan/15 disabled:pointer-events-none disabled:opacity-60";
+    "text-sm font-semibold px-6 py-3 inline-flex items-center justify-center gap-2 transition-all duration-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-[#00f0ff]/20 disabled:pointer-events-none disabled:opacity-60 cursor-pointer";
   const styles =
     variant === "primary"
-      ? "bg-cyan text-white shadow-[0_12px_28px_rgba(37,99,235,0.24)] hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-[0_16px_34px_rgba(37,99,235,0.28)]"
-      : "border border-line bg-white text-ink shadow-sm hover:-translate-y-0.5 hover:border-cyan hover:text-cyan hover:shadow-[0_12px_26px_rgba(15,23,42,0.08)]";
+      ? "bg-gradient-to-r from-blue-600 via-blue-500 to-[#00d8ea] text-white shadow-[0_0_20px_rgba(0,240,255,0.25)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(0,240,255,0.4)] hover:brightness-110"
+      : "border border-white/15 bg-white/5 text-slate-200 backdrop-blur-md hover:-translate-y-0.5 hover:border-[#00f0ff]/50 hover:text-white hover:bg-white/10 hover:shadow-[0_0_20px_rgba(0,240,255,0.15)]";
   const cls = `${base} ${styles} ${className}`;
 
   if (href) {

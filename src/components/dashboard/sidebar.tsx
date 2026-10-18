@@ -13,32 +13,32 @@ import {
   Mic,
   LineChart,
   Bot,
-  Globe,
   User,
   Settings,
   Sparkles,
   BriefcaseBusiness,
   ListChecks,
+  GraduationCap,
 } from "lucide-react";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/career", label: "Career", icon: Target },
-  { href: "/dashboard/skills", label: "Skill gap", icon: BarChart3 },
+  { href: "/dashboard/career", label: "Career Fit", icon: Target },
+  { href: "/dashboard/skills", label: "Skill Gap", icon: BarChart3 },
   { href: "/dashboard/roadmap", label: "Roadmap", icon: Map },
-  { href: "/dashboard/resume", label: "Resume", icon: FileText },
-  { href: "/dashboard/aptitude", label: "Aptitude", icon: Calculator },
+  { href: "/dashboard/resume", label: "Resume & ATS", icon: FileText },
+  { href: "/dashboard/aptitude", label: "Aptitude Drills", icon: Calculator },
   { href: "/dashboard/projects", label: "Projects", icon: Lightbulb },
-  { href: "/dashboard/interview", label: "Interview", icon: Mic },
-  { href: "/dashboard/analytics", label: "Analytics", icon: LineChart },
-  { href: "/dashboard/mentor", label: "AI mentor", icon: Bot },
-  { href: "/dashboard/profile-optimization", label: "Profile optimization", icon: Sparkles },
-  { href: "/dashboard/jobs", label: "Job matching", icon: BriefcaseBusiness },
+  { href: "/dashboard/interview", label: "AI Interview", icon: Mic },
+  { href: "/dashboard/analytics", label: "Readiness Analytics", icon: LineChart },
+  { href: "/dashboard/mentor", label: "AI Mentor", icon: Bot },
+  { href: "/dashboard/profile-optimization", label: "Profile Optimizer", icon: Sparkles },
+  { href: "/dashboard/jobs", label: "Job Matching", icon: BriefcaseBusiness },
   { href: "/dashboard/action-center", label: "Career Action Center", icon: ListChecks },
 ];
 
 const bottomNav = [
-  { href: "/dashboard/profile", label: "Profile", icon: User },
+  { href: "/dashboard/profile", label: "Student Profile", icon: User },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -51,32 +51,37 @@ export default function Sidebar() {
       <Link
         key={l.href}
         href={l.href}
-        className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors rounded-xl ${
+        className={`flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium transition-all rounded-xl ${
           active
-            ? "bg-cyan/10 text-white border border-cyan/25 shadow-[0_8px_22px_rgba(37,99,235,0.14)]"
-            : "border border-transparent text-slate-300 hover:text-white hover:bg-slate-900"
+            ? "bg-[#00f0ff]/15 text-[#00f0ff] border border-[#00f0ff]/30 shadow-[0_0_15px_rgba(0,240,255,0.18)]"
+            : "border border-transparent text-slate-400 hover:text-white hover:bg-white/5"
         }`}
       >
-        <l.icon size={16} />
-        {l.label}
+        <l.icon size={17} className={active ? "text-[#00f0ff]" : "text-slate-400"} />
+        <span>{l.label}</span>
       </Link>
     );
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-slate-800 bg-slate-950 text-slate-100 py-6">
-      <div className="px-4 mb-6">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-cyan/15 flex items-center justify-center ring-1 ring-cyan/20">
-            <div className="w-3 h-3 rounded-sm bg-cyan" />
+    <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-white/10 bg-[#050811] text-slate-100 py-6">
+      <div className="px-5 mb-6">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 text-[#00f0ff] flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.2)] group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all">
+            <GraduationCap size={18} />
           </div>
-          <span className="font-black tracking-tight text-sm">
-            CAREERFORGE <span className="text-cyan">AI</span>
+          <span className="text-xl font-black tracking-tighter text-white">
+            CareerForge<span className="text-[#00f0ff]">.AI</span>
           </span>
         </Link>
       </div>
-      <nav className="flex-1 flex flex-col gap-1.5 px-3">{nav.map(item)}</nav>
-      <div className="flex flex-col gap-1.5 border-t border-slate-800 pt-3 mt-3 px-3">
+
+      <div className="px-5 mb-2 text-[10px] font-mono tracking-widest text-slate-500 uppercase">
+        Placement Modules
+      </div>
+      <nav className="flex-1 flex flex-col gap-1 px-3 overflow-y-auto">{nav.map(item)}</nav>
+
+      <div className="flex flex-col gap-1 border-t border-white/10 pt-3 mt-3 px-3">
         {bottomNav.map(item)}
       </div>
     </aside>

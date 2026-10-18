@@ -108,12 +108,17 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
     const authUser = session?.user;
     if (!authUser?.email) return null;
 
-    await syncNeonAuthUser({
-      id: authUser.id,
-      email: authUser.email,
-      emailVerified: authUser.emailVerified,
-      name: authUser.name,
-    });
+    // Best-effort sync — a slow or failing DB sync must NOT invalidate the session.
+    try {
+      await syncNeonAuthUser({
+        id: authUser.id,
+        email: authUser.email,
+        emailVerified: authUser.emailVerified,
+        name: authUser.name,
+      });
+    } catch (syncError) {
+      console.warn("syncNeonAuthUser failed (non-fatal):", syncError);
+    }
 
     const user = await prisma.user.findUnique({
       where: { neonAuthUserId: authUser.id },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { clearSession, getSession } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import NotificationsDropdown from "./notifications";
@@ -17,29 +17,29 @@ export default function DashboardHeader({
   const [userName, setUserName] = useState("ST");
 
   useEffect(() => {
+    // Only fetch user info for display — do NOT redirect here.
+    // Redirection is ProtectedRoute's responsibility.
     let active = true;
 
-    getSession().then((session) => {
-      if (!active) return;
-
-      if (!session) {
-        router.replace("/login");
-        return;
-      }
-
-      const initials = session.name
-        .split(" ")
-        .map((part) => part[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase();
-      setUserName(initials || "ST");
-    });
+    getSession()
+      .then((session) => {
+        if (!active || !session) return;
+        const initials = session.name
+          .split(" ")
+          .map((part) => part[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase();
+        setUserName(initials || "ST");
+      })
+      .catch(() => {
+        // Silently ignore — initials will remain default "ST"
+      });
 
     return () => {
       active = false;
     };
-  }, [router]);
+  }, []); // empty deps — only run on mount
 
   const handleLogout = async () => {
     await clearSession();
@@ -47,18 +47,21 @@ export default function DashboardHeader({
   };
 
   return (
-    <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-line bg-white/80 p-5 shadow-[0_12px_34px_rgba(15,23,42,0.06)] sm:flex-row sm:items-start sm:justify-between">
+    <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-white/10 bg-[#0c1322]/85 backdrop-blur-md p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-2xl md:text-3xl font-black tracking-tight text-ink">{title}</h1>
-        {subtitle && <p className="text-sm text-muted mt-1">{subtitle}</p>}
+        <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white">{title}</h1>
+        {subtitle && <p className="text-sm text-slate-400 mt-1">{subtitle}</p>}
       </div>
-      <div className="flex items-center gap-4">
-        <button onClick={handleLogout} className="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-xs font-semibold text-muted shadow-sm hover:text-ink">
-          <LogOut size={14} />
-          Logout
-        </button>
+      <div className="flex items-center gap-3">
         <NotificationsDropdown />
-        <div className="w-9 h-9 rounded-xl bg-cyan/10 border border-cyan/20 text-cyan flex items-center justify-center text-xs font-mono font-bold">
+        <button
+          onClick={handleLogout}
+          className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-colors shadow-sm"
+        >
+          <LogOut size={14} />
+          <span>Logout</span>
+        </button>
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#00f0ff]/40 bg-[#00f0ff]/15 text-xs font-mono font-bold text-[#00f0ff] shadow-[0_0_12px_rgba(0,240,255,0.25)]">
           {userName}
         </div>
       </div>

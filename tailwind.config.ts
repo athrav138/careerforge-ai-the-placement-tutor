@@ -5,21 +5,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        navy: "#F8FAFC",
-        panel: "#FFFFFF",
-        line: "#E2E8F0",
-        cyan: "#2563EB",
-        forge: "#4F46E5",
-        ink: "#0F172A",
-        muted: "#64748B",
-        success: "#16A34A",
-        warning: "#F59E0B",
+        navy: "#05050a",
+        panel: "#0c1322",
+        line: "rgba(255, 255, 255, 0.1)",
+        cyan: "#00f0ff",
+        forge: "#3b82f6",
+        ink: "#f8fafc",
+        muted: "#94a3b8",
+        success: "#10b981",
+        warning: "#f59e0b",
       },
       fontFamily: {
         mono: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       backgroundImage: {
-        grid: "radial-gradient(circle, #E2E8F0 1px, transparent 1px)",
+        grid: "radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px)",
       },
       backgroundSize: {
         grid: "26px 26px",

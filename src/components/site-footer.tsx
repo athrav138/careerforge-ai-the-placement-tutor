@@ -33,31 +33,38 @@ const cols = [
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-line bg-white/85 py-14">
+    <footer className="border-t border-white/10 bg-[#05050a] py-16 text-slate-300">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid sm:grid-cols-4 gap-10 mb-10">
+        <div className="grid sm:grid-cols-4 gap-10 mb-12">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-cyan/25 bg-cyan/10 text-cyan">
-                <GraduationCap size={17} />
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 text-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+                <GraduationCap size={18} />
               </div>
-              <span className="font-black tracking-tight text-sm">
-                CAREERFORGE <span className="text-forge">AI</span>
+              <span className="text-xl font-black tracking-tighter text-white">
+                CareerForge<span className="text-[#00f0ff]">.AI</span>
               </span>
             </div>
-            <p className="text-sm text-muted mt-3 max-w-[240px]">
-              The Placement Tutor for personalized career guidance, preparation planning, and placement-readiness tracking.
+            <p className="text-sm text-slate-400 mt-4 leading-relaxed max-w-[260px]">
+              The intelligent placement tutor for personalized career guidance, preparation planning, and placement-readiness tracking.
             </p>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>System Operational // 99.98% Uptime</span>
+            </div>
           </div>
           {cols.map((c) => (
             <div key={c.title}>
-              <div className="text-xs tracking-widest text-muted font-mono mb-3">
+              <div className="text-xs tracking-widest text-[#00f0ff] font-mono mb-4 font-semibold">
                 {c.title.toUpperCase()}
               </div>
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {c.links.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="text-sm text-muted hover:text-ink transition-colors">
+                    <Link
+                      href={l.href}
+                      className="text-sm text-slate-400 hover:text-white transition-colors"
+                    >
                       {l.label}
                     </Link>
                   </li>
@@ -66,9 +73,9 @@ export default function SiteFooter() {
             </div>
           ))}
         </div>
-        <div className="border-t border-line pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted font-mono">
-          <span>Copyright 2026 CareerForge AI</span>
-          <span>Built for ambitious students</span>
+        <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-mono">
+          <span>&copy; {new Date().getFullYear()} CareerForge AI. All rights reserved.</span>
+          <span>Intelligent Placement Platform v2.4</span>
         </div>
       </div>
     </footer>

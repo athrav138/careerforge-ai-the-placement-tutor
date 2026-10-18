@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html {
@@ -12,17 +12,17 @@ html {
 
 body {
   background:
-    linear-gradient(rgba(226, 232, 240, 0.52) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(226, 232, 240, 0.52) 1px, transparent 1px),
-    linear-gradient(135deg, #f8fafc 0%, #eef6ff 48%, #f8fafc 100%);
-  background-size: 34px 34px, 34px 34px, auto;
-  color: #0f172a;
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(135deg, #05050a 0%, #070b14 50%, #05050a 100%);
+  background-size: 36px 36px, 36px 36px, auto;
+  color: #f8fafc;
   min-height: 100vh;
 }
 
 ::selection {
-  background: rgba(37, 99, 235, 0.18);
-  color: #0f172a;
+  background: rgba(0, 240, 255, 0.3);
+  color: #ffffff;
 }
 
 * {
@@ -30,7 +30,7 @@ body {
 }
 
 .landing-page {
-  --landing-cyan: #2563eb;
+  --landing-cyan: #00f0ff;
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -40,105 +40,44 @@ body {
 .landing-page::after {
   position: absolute;
   z-index: -1;
-  width: 34rem;
-  height: 34rem;
+  width: 38rem;
+  height: 38rem;
   border-radius: 9999px;
   content: "";
   pointer-events: none;
-  filter: blur(12px);
-  opacity: 0.38;
+  filter: blur(100px);
+  opacity: 0.22;
 }
 
 .landing-page::before {
-  top: 4rem;
-  left: -18rem;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.2), transparent 68%);
-  animation: landing-drift 14s ease-in-out infinite alternate;
+  top: 2rem;
+  left: -15rem;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.35), transparent 70%);
 }
 
 .landing-page::after {
-  top: 30rem;
-  right: -19rem;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.16), transparent 68%);
-  animation: landing-drift-reverse 17s ease-in-out infinite alternate;
+  top: 26rem;
+  right: -16rem;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3), transparent 70%);
 }
 
 .landing-hero {
   position: relative;
 }
 
-.landing-hero::after {
-  position: absolute;
-  top: 10%;
-  right: 42%;
-  width: 12rem;
-  height: 12rem;
-  border: 1px solid rgba(37, 99, 235, 0.12);
-  border-radius: 9999px;
-  content: "";
-  pointer-events: none;
-  animation: landing-pulse 5s ease-in-out infinite;
-}
-
-.landing-reveal {
-  animation: landing-reveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.landing-delay-1 {
-  animation-delay: 0.12s;
-}
-
-.landing-dashboard-preview {
-  position: relative;
-  overflow: hidden;
-  animation: landing-preview-in 1s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both,
-    landing-float 7s ease-in-out 1.3s infinite;
-}
-
-.landing-dashboard-preview::before {
-  position: absolute;
-  top: -8rem;
-  right: -5rem;
-  width: 15rem;
-  height: 15rem;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.2), transparent 68%);
-  content: "";
-  animation: landing-orbit 8s linear infinite;
-  pointer-events: none;
-}
-
-.landing-section {
-  animation: landing-section-in 0.9s ease both;
-  animation-timeline: view();
-  animation-range: entry 0% cover 18%;
-}
-
 .landing-card {
-  animation: landing-card-in 0.7s ease both;
   transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease;
 }
 
 .landing-card:hover {
   transform: translateY(-0.35rem);
-}
-
-.landing-float {
-  animation: landing-float 6s ease-in-out infinite;
-}
-
-.landing-float:nth-child(2n) {
-  animation-delay: -1.7s;
-}
-
-.landing-float:nth-child(3n) {
-  animation-delay: -3.2s;
+  border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 240, 255, 0.08);
 }
 
 .landing-cta {
   position: relative;
   overflow: hidden;
-  animation: landing-cta-glow 4s ease-in-out infinite;
 }
 
 .landing-cta::before {
@@ -147,114 +86,11 @@ body {
   bottom: 0;
   left: -45%;
   width: 30%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.2), transparent);
   content: "";
   transform: skewX(-18deg);
-  animation: landing-sweep 5s ease-in-out infinite;
+  animation: landing-sweep 6s ease-in-out infinite;
   pointer-events: none;
-}
-
-@keyframes landing-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(1.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes landing-preview-in {
-  from {
-    opacity: 0;
-    transform: translateX(2rem) rotate(1.5deg) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) rotate(0) scale(1);
-  }
-}
-
-@keyframes landing-section-in {
-  from {
-    opacity: 0;
-    transform: translateY(1.25rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes landing-card-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes landing-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-0.35rem);
-  }
-}
-
-@keyframes landing-drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    transform: translate3d(5rem, 3rem, 0) scale(1.12);
-  }
-}
-
-@keyframes landing-drift-reverse {
-  from {
-    transform: translate3d(0, 0, 0) scale(1.05);
-  }
-  to {
-    transform: translate3d(-4rem, -2rem, 0) scale(0.92);
-  }
-}
-
-@keyframes landing-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-}
-
-@keyframes landing-orbit {
-  from {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  to {
-    transform: translate(-2rem, 2rem) rotate(360deg);
-  }
-}
-
-@keyframes landing-cta-glow {
-  0%,
-  100% {
-    box-shadow: 0 12px 34px rgba(15, 23, 42, 0.06);
-  }
-  50% {
-    box-shadow: 0 18px 48px rgba(37, 99, 235, 0.13);
-  }
 }
 
 @keyframes landing-sweep {
