@@ -3,20 +3,24 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signup } from "../login/actions";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth";
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleGoogleLogin = async () => {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    setError("");
+    try {
+      const { error: oauthError } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+      if (oauthError) setError("Google sign-up is unavailable. Please try again.");
+    } catch {
+      setError("Google sign-up is unavailable. Please try again.");
+    }
   };
 
   return (
@@ -62,8 +66,13 @@ export default function Register() {
           <p className="text-slate-400 mb-8">Start your personalized career journey.</p>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg mb-6 text-sm">
+            <div role="alert" className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg mb-6 text-sm">
               {error}
+            </div>
+          )}
+          {message && (
+            <div role="status" className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 p-4 rounded-lg mb-6 text-sm">
+              {message}
             </div>
           )}
 
@@ -92,8 +101,11 @@ export default function Register() {
 
           <form action={async (formData) => {
             setLoading(true);
+            setError("");
+            setMessage("");
             const res = await signup(formData);
             if (res?.error) setError(res.error);
+            if (res?.message) setMessage(res.message);
             setLoading(false);
           }} className="space-y-4">
             <div>

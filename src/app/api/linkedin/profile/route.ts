@@ -48,10 +48,10 @@ export async function GET() {
             endDate: true,
             isCurrent: true,
           },
-          orderBy: {
-            isCurrent: "desc",
-            startDate: "desc",
-          },
+          orderBy: [
+            { isCurrent: "desc" },
+            { startDate: "desc" },
+          ],
         },
         education: {
           select: {

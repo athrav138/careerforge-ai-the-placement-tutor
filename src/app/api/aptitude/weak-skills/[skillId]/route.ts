@@ -4,8 +4,9 @@ import { getCurrentUser } from "@/lib/auth-server";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { skillId: string } }
+  context: { params: Promise<{ skillId: string }> }
 ) {
+  const params = await context.params;
   try {
     const user = await getCurrentUser();
     if (!user || !user.studentProfileId) {

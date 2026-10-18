@@ -2,21 +2,10 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { calculateReadiness } from "@/lib/readiness";
+import { buildCareerActionTransaction, type ActionDraft } from "@/lib/action-center-transaction";
 
 export const ACTION_CATEGORIES = ["SKILL", "RESUME", "APTITUDE", "INTERVIEW", "ROADMAP", "PROJECT", "GITHUB", "LINKEDIN", "JOB", "APPLICATION", "PROFILE"] as const;
 export const ACTION_PRIORITIES = ["HIGH", "MEDIUM", "LOW"] as const;
-
-type ActionDraft = {
-  source: string;
-  sourceId?: string;
-  title: string;
-  description: string;
-  category: (typeof ACTION_CATEGORIES)[number];
-  priority: (typeof ACTION_PRIORITIES)[number];
-  reason: string;
-  actionUrl?: string;
-  estimatedMinutes?: number;
-};
 
 function priorityFromGap(priority: string, gapLevel: string) {
   return priority === "HIGH" || ["CRITICAL", "HIGH"].includes(gapLevel) ? "HIGH" : gapLevel === "MEDIUM" ? "MEDIUM" : "LOW";
@@ -89,12 +78,11 @@ export async function buildActionDrafts(studentProfileId: string): Promise<Actio
 
 export async function generateActions(studentProfileId: string) {
   const drafts = await buildActionDrafts(studentProfileId);
-  const sources = drafts.map((draft) => draft.source);
-  await prisma.careerAction.deleteMany({ where: { studentProfileId, completed: false, source: { notIn: sources.length ? sources : ["__none__"] } } });
-  for (const draft of drafts) {
-    await prisma.careerAction.upsert({ where: { studentProfileId_source: { studentProfileId, source: draft.source } }, create: { studentProfileId, ...draft }, update: { ...draft } });
-  }
-  return prisma.careerAction.findMany({ where: { studentProfileId }, orderBy: [{ completed: "asc" }, { priority: "asc" }, { updatedAt: "desc" }] });
+  const operations = buildCareerActionTransaction(prisma.careerAction, studentProfileId, drafts);
+
+  // Keep stale-action deletion, regeneration, and the returned snapshot in one commit.
+  const results = await prisma.$transaction(operations);
+  return results[results.length - 1] as Awaited<ReturnType<typeof prisma.careerAction.findMany>>;
 }
 
 export async function getActionCenter(studentProfileId: string) {

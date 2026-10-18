@@ -32,9 +32,20 @@ export default function ActionCenter() {
     finally { setLoading(false); setBusy(false); }
   };
 
-  // The initial load intentionally runs once; refreshes are triggered by the button.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/action-center", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error ?? "Unable to load the action center.");
+        if (!cancelled) setData(payload);
+      })
+      .catch((requestError) => {
+        if (!cancelled) setError(requestError instanceof Error ? requestError.message : "Unable to load the action center.");
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const update = async (id: string, operation: "complete" | "reopen" | "delete") => {
     const method = operation === "delete" ? "DELETE" : "POST";

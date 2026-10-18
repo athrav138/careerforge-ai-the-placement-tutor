@@ -1,22 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { login } from "./actions";
-import { createClient } from "@/lib/supabase/client";
+import { authClient } from "@/lib/auth";
 
-export default function Login() {
+function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const providerError = searchParams.get("error") === "profile_sync_failed"
+    ? "Your identity was verified, but your application profile could not be loaded. Please try again."
+    : searchParams.get("error") === "auth_failed"
+      ? "Sign-in could not be completed. Please try again."
+      : "";
 
   const handleGoogleLogin = async () => {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    setError("");
+    try {
+      const { error: oauthError } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+      if (oauthError) setError("Google sign-in is unavailable. Please try again.");
+    } catch {
+      setError("Google sign-in is unavailable. Please try again.");
+    }
   };
 
   return (
@@ -61,9 +71,9 @@ export default function Login() {
           <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome Back</h1>
           <p className="text-slate-400 mb-8">Continue your career journey.</p>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg mb-6 text-sm">
-              {error}
+          {(error || providerError) && (
+            <div role="alert" className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg mb-6 text-sm">
+              {error || providerError}
             </div>
           )}
 
@@ -140,4 +150,8 @@ export default function Login() {
       </div>
     </div>
   );
+}
+
+export default function Login() {
+  return <Suspense fallback={null}><LoginForm /></Suspense>;
 }

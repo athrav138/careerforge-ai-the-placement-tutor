@@ -3,7 +3,8 @@ import { getCurrentUser } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 import { collectUnifiedGaps, refreshRoadmapWithNewGaps } from "@/lib/roadmap";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     const user = await getCurrentUser();
     if (!user || !user.studentProfileId) {

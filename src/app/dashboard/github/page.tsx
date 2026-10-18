@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
-import { Github, Star, GitFork, FileText, Lock, ExternalLink, RefreshCw, X, CheckCircle2, AlertCircle, Code2 } from "lucide-react";
+import { Star, GitFork, FileText, Lock, ExternalLink, RefreshCw, X, CheckCircle2, AlertCircle, Code2 } from "lucide-react";
 
 type GitHubConnection = {
   id: string;
@@ -84,10 +84,6 @@ export default function GitHubDashboard() {
   const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadGitHubData();
-  }, []);
-
   const loadGitHubData = async () => {
     try {
       setLoading(true);
@@ -122,6 +118,36 @@ export default function GitHubDashboard() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadInitialData = async () => {
+      try {
+        const [profileResponse, analyticsResponse] = await Promise.all([
+          fetch("/api/github/profile"),
+          fetch("/api/github/analytics"),
+        ]);
+        if (cancelled) return;
+        if (profileResponse.status === 404) {
+          setProfile(null);
+          setAnalytics(null);
+          return;
+        }
+        if (!profileResponse.ok || !analyticsResponse.ok) throw new Error("Failed to load GitHub data");
+        const [profileData, analyticsData] = await Promise.all([profileResponse.json(), analyticsResponse.json()]);
+        if (!cancelled) {
+          setProfile(profileData);
+          setAnalytics(analyticsData);
+        }
+      } catch (error) {
+        if (!cancelled) setError(error instanceof Error ? error.message : "Failed to load GitHub data");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void loadInitialData();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleSync = async () => {
     if (!accessToken || !username) {
@@ -189,7 +215,7 @@ export default function GitHubDashboard() {
         <DashboardHeader title="GitHub Integration" subtitle="Connect your GitHub account to analyze your technical portfolio." />
         <Panel className="rounded-2xl p-6">
           <div className="flex flex-col items-center gap-4 text-center">
-            <Github className="text-muted" size={48} />
+            <Code2 className="text-muted" size={48} />
             <div>
               <h2 className="text-xl font-black text-ink">Connect GitHub</h2>
               <p className="mt-2 text-sm text-muted">
@@ -277,7 +303,7 @@ export default function GitHubDashboard() {
 
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Github className="text-cyan" size={20} />
+          <Code2 className="text-cyan" size={20} />
           <span className="text-sm font-semibold text-ink">@{profile.connection.username}</span>
           <span className="text-xs text-muted">
             Last synced: {new Date(profile.connection.lastSyncedAt).toLocaleDateString()}
@@ -326,7 +352,7 @@ export default function GitHubDashboard() {
             <h2 className="mt-2 text-lg font-black text-ink">Your GitHub Presence</h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <MetricCard label="Total Repositories" value={profile.metrics.totalRepositories} icon={<Github size={18} />} />
+            <MetricCard label="Total Repositories" value={profile.metrics.totalRepositories} icon={<Code2 size={18} />} />
             <MetricCard label="Public Repositories" value={profile.metrics.publicRepositories} icon={<Lock size={18} />} />
             <MetricCard label="Total Stars" value={profile.metrics.totalStars} icon={<Star size={18} />} />
             <MetricCard label="Total Forks" value={profile.metrics.totalForks} icon={<GitFork size={18} />} />

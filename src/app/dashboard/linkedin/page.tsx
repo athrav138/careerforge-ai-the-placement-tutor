@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
-import { Linkedin, Briefcase, GraduationCap, Award, ExternalLink, RefreshCw, X, CheckCircle2, AlertCircle, Building, Calendar, Code2 } from "lucide-react";
+import { Briefcase, GraduationCap, Award, ExternalLink, RefreshCw, X, CheckCircle2, AlertCircle, Building, Calendar, Code2 } from "lucide-react";
 
 type LinkedInProfile = {
   profile: {
@@ -109,10 +109,6 @@ export default function LinkedInDashboard() {
     education: [],
   });
 
-  useEffect(() => {
-    loadLinkedInData();
-  }, []);
-
   const loadLinkedInData = async () => {
     try {
       setLoading(true);
@@ -147,6 +143,36 @@ export default function LinkedInDashboard() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadInitialData = async () => {
+      try {
+        const [profileResponse, analyticsResponse] = await Promise.all([
+          fetch("/api/linkedin/profile"),
+          fetch("/api/linkedin/analytics"),
+        ]);
+        if (cancelled) return;
+        if (profileResponse.status === 404) {
+          setProfile(null);
+          setAnalytics(null);
+          return;
+        }
+        if (!profileResponse.ok || !analyticsResponse.ok) throw new Error("Failed to load LinkedIn data");
+        const [profileData, analyticsData] = await Promise.all([profileResponse.json(), analyticsResponse.json()]);
+        if (!cancelled) {
+          setProfile(profileData);
+          setAnalytics(analyticsData);
+        }
+      } catch (error) {
+        if (!cancelled) setError(error instanceof Error ? error.message : "Failed to load LinkedIn data");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void loadInitialData();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleImport = async () => {
     if (!formData.profileUrl) {
@@ -286,7 +312,7 @@ export default function LinkedInDashboard() {
         <DashboardHeader title="LinkedIn Integration" subtitle="Import your LinkedIn profile to analyze your professional presence." />
         <Panel className="rounded-2xl p-6">
           <div className="flex flex-col items-center gap-4 text-center">
-            <Linkedin className="text-muted" size={48} />
+            <Briefcase className="text-muted" size={48} />
             <div>
               <h2 className="text-xl font-black text-ink">Import LinkedIn Profile</h2>
               <p className="mt-2 text-sm text-muted">
@@ -560,7 +586,7 @@ export default function LinkedInDashboard() {
 
       <div className="mb-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Linkedin className="text-cyan" size={20} />
+          <Briefcase className="text-cyan" size={20} />
           <span className="text-sm font-semibold text-ink">{profile.profile.name || "LinkedIn Profile"}</span>
           <span className="text-xs text-muted">
             Last synced: {new Date(profile.profile.lastSyncedAt).toLocaleDateString()}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-server";
 import { generateActions, getActionCenter } from "@/lib/action-center";
+import { postActionCenterResponse } from "@/lib/action-center-response";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -9,7 +10,5 @@ export async function GET() {
 }
 
 export async function POST() {
-  const user = await getCurrentUser();
-  if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-  try { return NextResponse.json({ actions: await generateActions(user.studentProfileId) }); } catch (error) { console.error("Unable to generate actions:", error); return NextResponse.json({ error: "Unable to generate actions." }, { status: 500 }); }
+  return postActionCenterResponse(getCurrentUser, generateActions);
 }

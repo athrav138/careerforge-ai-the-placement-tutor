@@ -9,9 +9,9 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   FileText,
-  Github,
+  Code2,
   LineChart,
-  Linkedin,
+  Briefcase,
   Mic,
   Target,
 } from "lucide-react";
@@ -34,8 +34,8 @@ const quickLinks = [
   { href: "/dashboard/career", label: "CAREER MATCH", title: "Strong fit detected", icon: BriefcaseBusiness },
   { href: "/dashboard/skills", label: "TOP GAP", title: "Review your saved skills", icon: Target },
   { href: "/dashboard/interview", label: "INTERVIEW PREP", title: "Start your first mock round", icon: Mic },
-  { href: "/dashboard/github", label: "GITHUB", title: "Connect your portfolio", icon: Github },
-  { href: "/dashboard/linkedin", label: "LINKEDIN", title: "Import your profile", icon: Linkedin },
+  { href: "/dashboard/github", label: "GITHUB", title: "Connect your portfolio", icon: Code2 },
+  { href: "/dashboard/linkedin", label: "LINKEDIN", title: "Import your profile", icon: Briefcase },
 ];
 
 type Readiness = {
@@ -194,7 +194,7 @@ export default function Dashboard() {
           <div className={`rounded-xl border p-4 ${professionalConnections.github ? "border-green-200 bg-green-50" : "border-line bg-slate-50"}`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Github className={professionalConnections.github ? "text-green-600" : "text-muted"} size={20} />
+                <Code2 className={professionalConnections.github ? "text-green-600" : "text-muted"} size={20} />
                 <span className="font-semibold text-ink">GitHub</span>
               </div>
               {professionalConnections.github ? (
@@ -219,7 +219,7 @@ export default function Dashboard() {
           <div className={`rounded-xl border p-4 ${professionalConnections.linkedin ? "border-green-200 bg-green-50" : "border-line bg-slate-50"}`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Linkedin className={professionalConnections.linkedin ? "text-green-600" : "text-muted"} size={20} />
+                <Briefcase className={professionalConnections.linkedin ? "text-green-600" : "text-muted"} size={20} />
                 <span className="font-semibold text-ink">LinkedIn</span>
               </div>
               {professionalConnections.linkedin ? (

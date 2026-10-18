@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import { Bell, Check, Info, AlertTriangle, XCircle, CheckCircle2 } from "lucide-react";
 
 type Notification = {
@@ -16,7 +16,18 @@ export default function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission>("default");
+  const permission = useSyncExternalStore(
+    (onChange) => {
+      window.addEventListener("focus", onChange);
+      window.addEventListener("notificationpermissionchange", onChange);
+      return () => {
+        window.removeEventListener("focus", onChange);
+        window.removeEventListener("notificationpermissionchange", onChange);
+      };
+    },
+    () => ("Notification" in window ? Notification.permission : "default"),
+    () => "default",
+  );
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = async () => {
@@ -35,12 +46,13 @@ export default function NotificationsDropdown() {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setPermission(Notification.permission);
-    }
-    
-    // Fetch notifications initially
-    fetchNotifications();
+    let cancelled = false;
+    fetch("/api/notifications")
+      .then(async (response) => {
+        const data = await response.json();
+        if (response.ok && !cancelled) setNotifications(data.notifications || []);
+      })
+      .catch((error) => { if (!cancelled) console.error(error); });
 
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -48,7 +60,10 @@ export default function NotificationsDropdown() {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const requestPermission = async () => {
@@ -56,8 +71,8 @@ export default function NotificationsDropdown() {
       alert("This browser does not support desktop notification");
       return;
     }
-    const perm = await Notification.requestPermission();
-    setPermission(perm);
+    await Notification.requestPermission();
+    window.dispatchEvent(new Event("notificationpermissionchange"));
   };
 
   const markAsRead = async (id: string) => {

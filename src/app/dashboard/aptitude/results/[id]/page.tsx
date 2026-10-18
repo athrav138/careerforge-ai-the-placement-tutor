@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, CheckCircle2, Clock3, Trophy, XCircle } from "lucide-react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
@@ -75,7 +75,8 @@ function getScoreInterpretation(score: number) {
   return "Below Expectations - Significant study needed";
 }
 
-export default function AssessmentResultPage({ params }: { params: { id: string } }) {
+export default function AssessmentResultPage() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [result, setResult] = useState<AssessmentResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -85,7 +86,7 @@ export default function AssessmentResultPage({ params }: { params: { id: string 
     let mounted = true;
     void (async () => {
       try {
-        const response = await fetch(`/api/aptitude/attempts/${params.id}/result`);
+        const response = await fetch(`/api/aptitude/attempts/${id}/result`);
         const data = await response.json();
         
         if (!response.ok) {
@@ -98,7 +99,7 @@ export default function AssessmentResultPage({ params }: { params: { id: string 
         await fetch("/api/aptitude/weak-skills/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ attemptId: params.id }),
+          body: JSON.stringify({ attemptId: id }),
         }).then((r) => {
           if (r.ok) {
             // Best-effort: update roadmap in the background; don't await
@@ -123,7 +124,7 @@ export default function AssessmentResultPage({ params }: { params: { id: string 
     return () => {
       mounted = false;
     };
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return (

@@ -41,8 +41,29 @@ export default function ResumeAnalyzerPage() {
   }, [activeResume, fetchResumeDetails]);
 
   useEffect(() => {
-    void fetchResumes();
-  }, [fetchResumes]);
+    const controller = new AbortController();
+    const loadInitialResumes = async () => {
+      try {
+        const response = await fetch("/api/resume", { signal: controller.signal });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (controller.signal.aborted) return;
+        const items = data.resumes || [];
+        setResumes(items);
+        if (items.length) {
+          const detailsResponse = await fetch(`/api/resume/${items[0].id}`, { signal: controller.signal });
+          if (detailsResponse.ok) {
+            const details = await detailsResponse.json();
+            if (!controller.signal.aborted) setActiveResume(details.resume);
+          }
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) console.error(error);
+      }
+    };
+    void loadInitialResumes();
+    return () => controller.abort();
+  }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

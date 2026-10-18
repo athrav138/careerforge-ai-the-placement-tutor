@@ -257,7 +257,8 @@ export default function Aptitude() {
 
   useEffect(() => {
     if (session && secondsRemaining === 0 && !isSubmitting) {
-      void submitAssessment();
+      const timeout = window.setTimeout(() => { void submitAssessment(); }, 0);
+      return () => window.clearTimeout(timeout);
     }
   }, [isSubmitting, secondsRemaining, session, submitAssessment]);
 

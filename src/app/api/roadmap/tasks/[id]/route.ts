@@ -3,7 +3,8 @@ import { getCurrentUser } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 import { recalculateRoadmap, ROADMAP_STATUSES, type RoadmapStatus } from "@/lib/roadmap";
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });

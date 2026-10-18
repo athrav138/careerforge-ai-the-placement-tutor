@@ -18,6 +18,10 @@ async function readResponse(response: Response) {
   return payload;
 }
 
+function createOptimisticMessage(content: string): Message {
+  return { id: `pending-${Date.now()}`, role: "USER", content, createdAt: new Date().toISOString() };
+}
+
 export default function Mentor() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
@@ -38,20 +42,24 @@ export default function Mentor() {
     } finally { if (showLoading) setLoading(false); }
   };
 
-  const loadConversations = async () => {
-    setLoading(true);
-    try {
-      const data = await readResponse(await fetch("/api/mentor/conversations", { cache: "no-store" }));
-      setConversations(data.conversations);
-      if (data.conversations.length) await openConversation(data.conversations[0].id, false);
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Unable to load conversations.");
-    } finally { setLoading(false); }
-  };
-
-  // The initial conversation load should run once when the chat surface mounts.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { void loadConversations(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    const initialize = async () => {
+      try {
+        const data = await readResponse(await fetch("/api/mentor/conversations", { cache: "no-store" }));
+        if (cancelled) return;
+        setConversations(data.conversations);
+        if (data.conversations.length) {
+          const first = await readResponse(await fetch(`/api/mentor/conversations/${data.conversations[0].id}`, { cache: "no-store" }));
+          if (!cancelled) setActiveConversation(first.conversation);
+        }
+      } catch (requestError) {
+        if (!cancelled) setError(requestError instanceof Error ? requestError.message : "Unable to load conversations.");
+      } finally { if (!cancelled) setLoading(false); }
+    };
+    void initialize();
+    return () => { cancelled = true; };
+  }, []);
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [activeConversation?.messages?.length, sending]);
 
   const createConversation = async () => {
@@ -75,7 +83,7 @@ export default function Mentor() {
     const conversation = activeConversation ?? await createConversation();
     if (!conversation) return;
     setSending(true); setError(""); setInput("");
-    const optimistic: Message = { id: `pending-${Date.now()}`, role: "USER", content, createdAt: new Date().toISOString() };
+    const optimistic = createOptimisticMessage(content);
     setActiveConversation((current) => current ? { ...current, messages: [...(current.messages ?? []), optimistic] } : current);
     try {
       const data = await readResponse(await fetch(`/api/mentor/conversations/${conversation.id}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content }) }));

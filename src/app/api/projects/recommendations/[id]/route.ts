@@ -3,7 +3,8 @@ import { getCurrentUser } from "@/lib/auth-server";
 import { isProjectRecommendationStatus } from "@/lib/projects";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const user = await getCurrentUser();
   if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 
@@ -16,7 +17,8 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   return NextResponse.json({ recommendation });
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const user = await getCurrentUser();
   if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
 

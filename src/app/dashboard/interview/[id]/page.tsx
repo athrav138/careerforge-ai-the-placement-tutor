@@ -5,7 +5,7 @@ import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
 import Button from "@/components/ui/button";
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 type Answer = {
   id: string;
@@ -21,7 +21,8 @@ type Session = {
   answers: Answer[];
 };
 
-export default function ActiveInterview({ params }: { params: { id: string } }) {
+export default function ActiveInterview() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,12 +31,12 @@ export default function ActiveInterview({ params }: { params: { id: string } }) 
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/interview/sessions/${params.id}/result`)
+    fetch(`/api/interview/sessions/${id}/result`)
       .then(res => res.json())
       .then(data => {
         // If it's completed, redirect to results
         if (data.result && data.result.status === "COMPLETED") {
-          router.replace(`/dashboard/interview/${params.id}/result`);
+          router.replace(`/dashboard/interview/${id}/result`);
         }
       })
       .catch(() => {})
@@ -53,13 +54,13 @@ export default function ActiveInterview({ params }: { params: { id: string } }) 
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            const found = data.sessions.find((s: any) => s.id === params.id);
+            const found = data.sessions.find((s: any) => s.id === id);
             if (found) {
               if (found.status === "COMPLETED") {
-                router.replace(`/dashboard/interview/${params.id}/result`);
+                router.replace(`/dashboard/interview/${id}/result`);
               } else {
                 // We need the answers. Let's fetch them directly.
-                fetch(`/api/interview/sessions/${params.id}/active`)
+                fetch(`/api/interview/sessions/${id}/active`)
                   .then(r => r.json())
                   .then(activeData => {
                     if (activeData.success) {
@@ -75,7 +76,7 @@ export default function ActiveInterview({ params }: { params: { id: string } }) 
           }
         })
         .finally(() => setLoading(false));
-  }, [params.id, router]);
+  }, [id, router]);
 
   const saveCurrentAnswer = async () => {
     if (!session || !currentAnswer.trim()) return true;
@@ -83,7 +84,7 @@ export default function ActiveInterview({ params }: { params: { id: string } }) 
     
     setSaving(true);
     try {
-      const res = await fetch(`/api/interview/sessions/${params.id}/answers`, {
+      const res = await fetch(`/api/interview/sessions/${id}/answers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answerId, answerText: currentAnswer })
@@ -124,9 +125,9 @@ export default function ActiveInterview({ params }: { params: { id: string } }) 
     if (success) {
       setSaving(true);
       try {
-        const res = await fetch(`/api/interview/sessions/${params.id}/submit`, { method: "POST" });
+        const res = await fetch(`/api/interview/sessions/${id}/submit`, { method: "POST" });
         if (res.ok) {
-          router.replace(`/dashboard/interview/${params.id}/result`);
+          router.replace(`/dashboard/interview/${id}/result`);
         }
       } catch (e) {
         console.error(e);

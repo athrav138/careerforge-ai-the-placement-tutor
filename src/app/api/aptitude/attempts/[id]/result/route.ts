@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   const user = await getCurrentUser();
   if (!user || !user.studentProfileId) {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });

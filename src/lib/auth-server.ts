@@ -1,7 +1,30 @@
 import "server-only";
 
+import { createNeonAuth } from "@neondatabase/auth/next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { createClient } from "@/lib/supabase/server";
+
+let neonAuthInstance: ReturnType<typeof createNeonAuth> | undefined;
+
+export function getNeonAuth() {
+  if (neonAuthInstance) return neonAuthInstance;
+
+  const baseUrl = process.env.NEON_AUTH_BASE_URL;
+  const cookieSecret = process.env.NEON_AUTH_COOKIE_SECRET;
+
+  if (!baseUrl) {
+    throw new Error("Neon Auth is not configured. Set NEON_AUTH_BASE_URL.");
+  }
+  if (!cookieSecret || cookieSecret.length < 32) {
+    throw new Error("NEON_AUTH_COOKIE_SECRET must contain at least 32 characters.");
+  }
+
+  neonAuthInstance = createNeonAuth({
+    baseUrl,
+    cookies: { secret: cookieSecret },
+  });
+  return neonAuthInstance;
+}
 
 export type SafeUser = {
   id: string;
@@ -11,117 +34,97 @@ export type SafeUser = {
   studentProfileId: string | null;
 };
 
-async function runQueryWithRetry<T>(queryFn: () => Promise<T>, timeoutMs = 8000): Promise<T> {
-  const executeWithTimeout = () => {
-    let timer: NodeJS.Timeout;
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timer = setTimeout(() => reject(new Error("Database query timed out")), timeoutMs);
-    });
-    return Promise.race([queryFn(), timeoutPromise]).finally(() => clearTimeout(timer));
-  };
+type NeonIdentity = {
+  id: string;
+  email: string;
+  emailVerified: boolean;
+  name: string;
+};
+
+/** Link Neon Auth identities to app profiles without allowing unverified email claims to claim an existing profile. */
+export async function syncNeonAuthUser(authUser: NeonIdentity): Promise<void> {
+  const linkedUser = await prisma.user.findUnique({
+    where: { neonAuthUserId: authUser.id },
+    select: { id: true },
+  });
+  if (linkedUser) return;
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: authUser.email },
+    select: { id: true, neonAuthUserId: true },
+  });
+
+  if (existingUser) {
+    if (!authUser.emailVerified) {
+      throw new Error("Verify your email before linking it to an existing CareerForge profile.");
+    }
+    if (existingUser.neonAuthUserId && existingUser.neonAuthUserId !== authUser.id) {
+      throw new Error("This CareerForge profile is linked to another authentication identity.");
+    }
+
+    try {
+      await prisma.user.update({
+        where: { id: existingUser.id },
+        data: { neonAuthUserId: authUser.id },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        const concurrentLink = await prisma.user.findUnique({
+          where: { neonAuthUserId: authUser.id },
+          select: { id: true },
+        });
+        if (concurrentLink) return;
+      }
+      throw error;
+    }
+    return;
+  }
 
   try {
-    return await executeWithTimeout();
-  } catch (err: any) {
-    const isConnectionError =
-      err?.message?.includes("Closed") ||
-      err?.message?.includes("PostgreSQL connection") ||
-      err?.message?.includes("timed out");
-    if (isConnectionError) {
-      console.warn("Retrying database query after connection drop or timeout:", err?.message);
-      return await executeWithTimeout();
+    await prisma.user.create({
+      data: {
+        email: authUser.email,
+        neonAuthUserId: authUser.id,
+        name: authUser.name || authUser.email.split("@")[0],
+        passwordHash: null,
+        studentProfile: { create: {} },
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const concurrentLink = await prisma.user.findUnique({
+        where: { neonAuthUserId: authUser.id },
+        select: { id: true },
+      });
+      if (concurrentLink) return;
     }
-    throw err;
+    throw error;
   }
 }
 
 export async function getCurrentUser(): Promise<SafeUser | null> {
   try {
-    const supabase = createClient();
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    
-    if (!authUser || !authUser.email) return null;
+    const { data: session } = await getNeonAuth().getSession({ query: {} });
+    const authUser = session?.user;
+    if (!authUser?.email) return null;
 
-    let user = await runQueryWithRetry(() =>
-      prisma.user.findUnique({
-        where: { supabaseUserId: authUser.id },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          studentProfile: {
-            select: {
-              id: true,
-              profileCompletion: true,
-            },
-          },
-        },
-      })
-    );
+    await syncNeonAuthUser({
+      id: authUser.id,
+      email: authUser.email,
+      emailVerified: authUser.emailVerified,
+      name: authUser.name,
+    });
 
-    if (!user) {
-      const existingUser = await runQueryWithRetry(() =>
-        prisma.user.findUnique({
-          where: { email: authUser.email },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            studentProfile: {
-              select: {
-                id: true,
-                profileCompletion: true,
-              },
-            },
-          },
-        })
-      );
-
-      if (existingUser) {
-        user = await runQueryWithRetry(() =>
-          prisma.user.update({
-            where: { id: existingUser.id },
-            data: { supabaseUserId: authUser.id },
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              studentProfile: {
-                select: {
-                  id: true,
-                  profileCompletion: true,
-                },
-              },
-            },
-          })
-        );
-      } else {
-        user = await runQueryWithRetry(() =>
-          prisma.user.create({
-            data: {
-              email: authUser.email,
-              supabaseUserId: authUser.id,
-              name: authUser.user_metadata?.full_name || authUser.email.split('@')[0],
-              passwordHash: 'oauth',
-              studentProfile: {
-                create: {},
-              },
-            },
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              studentProfile: {
-                select: {
-                  id: true,
-                  profileCompletion: true,
-                },
-              },
-            },
-          })
-        );
-      }
-    }
+    const user = await prisma.user.findUnique({
+      where: { neonAuthUserId: authUser.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        studentProfile: { select: { id: true, profileCompletion: true } },
+      },
+    });
+    if (!user) return null;
 
     return {
       id: user.id,

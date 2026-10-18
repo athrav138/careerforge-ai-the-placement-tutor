@@ -76,19 +76,18 @@ export default function Roadmap() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
-  const loadRoadmap = () => {
-    setLoading(true);
+  useEffect(() => {
+    let cancelled = false;
     fetch("/api/roadmap", { cache: "no-store" })
-      .then(async (res) => {
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Unable to load roadmap.");
-        setRoadmap(data.roadmap);
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Unable to load roadmap.");
+        if (!cancelled) setRoadmap(data.roadmap);
       })
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(loadRoadmap, []);
+      .catch((requestError: Error) => { if (!cancelled) setError(requestError.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   // Group tasks by category, preserve priority ordering within each group
   const groupedTasks = useMemo(

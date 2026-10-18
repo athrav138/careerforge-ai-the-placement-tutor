@@ -52,7 +52,18 @@ export default function Projects() {
     }
   };
 
-  useEffect(() => { void loadRecommendations(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/projects/recommendations", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error ?? "Unable to load project recommendations.");
+        if (!cancelled) setRecommendations(data.recommendations);
+      })
+      .catch((requestError) => { if (!cancelled) setError(requestError instanceof Error ? requestError.message : "Unable to load project recommendations."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const updateStatus = async (recommendationId: string, status: Recommendation["status"]) => {
     setUpdatingId(recommendationId);

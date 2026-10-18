@@ -58,7 +58,24 @@ export default function Jobs() {
     }
   };
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetch("/api/jobs/recommended", { cache: "no-store" }),
+      fetch("/api/applications", { cache: "no-store" }),
+    ])
+      .then(async ([jobsResponse, applicationsResponse]) => {
+        const [jobsData, applicationsData] = await Promise.all([jobsResponse.json(), applicationsResponse.json()]);
+        if (!jobsResponse.ok) throw new Error(jobsData.error ?? "Unable to load recommended jobs.");
+        if (!cancelled) {
+          setRecommendations((jobsData.recommendations ?? []).map((item: { job: Job } & Omit<Recommendation, keyof Job>) => ({ ...item.job, ...item })));
+          setApplications(applicationsData.applications ?? []);
+        }
+      })
+      .catch((requestError) => { if (!cancelled) setError(requestError instanceof Error ? requestError.message : "Unable to load jobs."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   const updateJob = async (jobId: string, action: "save" | "apply") => {
     try {

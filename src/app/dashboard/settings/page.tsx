@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
 import { Settings as SettingsIcon, SlidersHorizontal } from "lucide-react";
+import { authClient } from "@/lib/auth";
 
 const groups = [
   { title: "Account", items: ["Change email", "Change password"] },
@@ -16,11 +17,21 @@ const groups = [
 export default function Settings() {
   const router = useRouter();
   const [managedSetting, setManagedSetting] = useState("");
+  const [logoutError, setLogoutError] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/login");
-    router.refresh();
+    setLoggingOut(true);
+    setLogoutError("");
+    try {
+      const { error } = await authClient.signOut({});
+      if (error) throw error;
+      router.replace("/login");
+      router.refresh();
+    } catch {
+      setLogoutError("We could not end your session. Please try again.");
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -55,13 +66,15 @@ export default function Settings() {
           {managedSetting} is managed through your saved profile and account settings.
         </p>
       )}
+      {logoutError && <p role="alert" className="mt-5 text-sm text-red-600">{logoutError}</p>}
       <button
         type="button"
         onClick={logout}
+        disabled={loggingOut}
         className="mt-6 inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-muted shadow-sm hover:text-ink"
       >
         <SettingsIcon size={16} />
-        Log out
+        {loggingOut ? "Logging out…" : "Log out"}
       </button>
     </>
   );

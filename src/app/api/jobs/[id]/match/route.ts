@@ -3,7 +3,8 @@ import { getCurrentUser } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 import { scoreJob } from "@/lib/jobs";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const user = await getCurrentUser();
   if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const job = await prisma.jobOpportunity.findUnique({ where: { id: params.id } });

@@ -5,16 +5,17 @@ import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
 import Button from "@/components/ui/button";
 import { Loader2, ArrowLeft, CheckCircle2, XCircle, BrainCircuit } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import ScoreBar from "@/components/ui/score-bar";
 
-export default function InterviewResult({ params }: { params: { id: string } }) {
+export default function InterviewResult() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/interview/sessions/${params.id}/result`)
+    fetch(`/api/interview/sessions/${id}/result`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.result) {
@@ -25,7 +26,7 @@ export default function InterviewResult({ params }: { params: { id: string } }) 
       })
       .catch(() => router.replace("/dashboard/interview"))
       .finally(() => setLoading(false));
-  }, [params.id, router]);
+  }, [id, router]);
 
   if (loading || !result) {
     return (

@@ -5,7 +5,8 @@ import { buildMentorContext } from "@/lib/mentor/context";
 import { GeminiMentorError, getMentorResponse } from "@/lib/mentor/gemini";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const user = await getCurrentUser();
   if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;

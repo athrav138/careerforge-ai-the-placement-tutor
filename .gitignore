@@ -1,8 +1,11 @@
 node_modules
 .next
+playwright-report
+test-results
 out
 .env
 .env*.local
 env.txt
 *.tsbuildinfo
 *.lnk
+powershell.cmd

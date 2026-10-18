@@ -9,14 +9,16 @@ async function getOwnedConversation(id: string, studentProfileId: string) {
   return { conversation };
 }
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const user = await getCurrentUser();
   if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const result = await getOwnedConversation(params.id, user.studentProfileId);
   return result.response ?? NextResponse.json({ conversation: result.conversation });
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const user = await getCurrentUser();
   if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const result = await getOwnedConversation(params.id, user.studentProfileId);
