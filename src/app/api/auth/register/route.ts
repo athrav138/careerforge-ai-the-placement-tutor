@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
-import { getAppUserForIdentity, toClientUser } from "@/lib/auth-server";
 
 export async function POST(request: Request) {
   try {
@@ -19,17 +18,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 });
     }
 
-    const { data, error } = await auth.signUp.email({ name, email, password });
-    if (error || !data?.user) {
-      return NextResponse.json({ error: error?.message || "Unable to create account." }, { status: 400 });
+    const { error } = await auth.signUp.email({ name, email, password });
+    if (error) {
+      return NextResponse.json({ error: error.message || "Unable to create account." }, { status: 400 });
     }
 
-    const user = await getAppUserForIdentity(data.user);
-    if (!user) {
-      return NextResponse.json({ error: "Account created, but the student profile could not be loaded." }, { status: 500 });
+    const { error: otpError } = await auth.emailOtp.sendVerificationOtp({ email });
+    if (otpError) {
+      console.error("Neon Auth verification OTP send failed:", otpError);
+      return NextResponse.json({
+        verificationRequired: true,
+        email,
+        error: "Account creation was attempted, but the verification code could not be sent. Try signing in or resending the code.",
+      }, { status: 201 });
     }
 
-    return NextResponse.json({ user: toClientUser(user) }, { status: 201 });
+    return NextResponse.json({
+      verificationRequired: true,
+      email,
+      message: "Check your email for the verification code.",
+    }, { status: 201 });
   } catch (error) {
     console.error("Register API error:", error);
     return NextResponse.json({ error: "Unable to create account." }, { status: 500 });

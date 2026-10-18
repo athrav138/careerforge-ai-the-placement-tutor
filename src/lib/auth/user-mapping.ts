@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 type AuthIdentity = {
   id: string;
   email: string;
+  emailVerified: boolean;
   name?: string | null;
 };
 
@@ -17,14 +18,16 @@ async function ensureStudentProfile(userId: string) {
 }
 
 /**
- * Keeps CareerForge's existing User/StudentProfile IDs stable while linking
- * a Neon Auth identity. Legacy password hashes are deliberately not changed:
- * authentication is now handled by Neon Auth.
+ * Keep existing CareerForge User/StudentProfile IDs stable. A legacy record
+ * is linked only after Neon Auth confirms the identity's email is verified.
  */
 export async function ensureAppUser(identity: AuthIdentity) {
   const email = identity.email?.trim().toLowerCase();
   if (!identity.id || !email) {
     throw new Error("Neon Auth returned a user without an ID or email.");
+  }
+  if (identity.emailVerified !== true) {
+    throw new Error("Please verify your email address before continuing.");
   }
 
   const linked = await prisma.user.findUnique({
@@ -57,18 +60,18 @@ export async function ensureAppUser(identity: AuthIdentity) {
   }
 
   try {
-    return await prisma.user.create({
+    const created = await prisma.user.create({
       data: {
         name: identity.name?.trim() || email.split("@")[0],
         email,
         neonAuthUserId: identity.id,
-        // This is not a usable password hash. Neon Auth owns credentials.
+        // Neon Auth owns credentials; this field is not used to authenticate.
         passwordHash: "managed-by-neon-auth",
         studentProfile: { create: {} },
       },
     });
+    return created;
   } catch (error) {
-    // Handle concurrent first sign-ins without creating duplicate app users.
     const racedIdentity = await prisma.user.findUnique({
       where: { neonAuthUserId: identity.id },
     });
@@ -76,19 +79,6 @@ export async function ensureAppUser(identity: AuthIdentity) {
       await ensureStudentProfile(racedIdentity.id);
       return racedIdentity;
     }
-
-    const racedEmail = await prisma.user.findFirst({
-      where: { email: { equals: email, mode: "insensitive" } },
-    });
-    if (racedEmail && !racedEmail.neonAuthUserId) {
-      const mapped = await prisma.user.update({
-        where: { id: racedEmail.id },
-        data: { neonAuthUserId: identity.id },
-      });
-      await ensureStudentProfile(mapped.id);
-      return mapped;
-    }
-
     throw error;
   }
 }

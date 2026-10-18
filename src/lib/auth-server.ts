@@ -15,6 +15,7 @@ export type SafeUser = {
 export async function getAppUserForIdentity(identity: {
   id: string;
   email: string;
+  emailVerified: boolean;
   name?: string | null;
 } | null | undefined): Promise<SafeUser | null> {
   if (!identity?.id || !identity.email) return null;
@@ -40,6 +41,7 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
     if (error || !data?.user) return null;
     return await getAppUserForIdentity(data.user);
   } catch (error) {
+    // Unverified email identities are intentionally not linked to app data.
     console.error("getCurrentUser error:", error);
     return null;
   }

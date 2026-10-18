@@ -22,7 +22,7 @@ export async function login(formData: FormData) {
     await getAppUserForIdentity(data.user);
   } catch (error) {
     console.error("CareerForge user mapping failed after Neon Auth login:", error);
-    return { error: "Signed in, but your student profile could not be loaded. Please try again." };
+    return { error: "Please verify your email address before continuing." };
   }
 
   revalidatePath("/dashboard", "layout");
@@ -48,18 +48,16 @@ export async function signup(formData: FormData) {
     return { error: "Passwords do not match." };
   }
 
-  const { data, error } = await auth.signUp.email({ name, email, password });
-  if (error || !data?.user) {
-    return { error: error?.message || "Unable to create account." };
+  const { error } = await auth.signUp.email({ name, email, password });
+  if (error) {
+    return { error: error.message || "Unable to create account." };
   }
 
-  try {
-    await getAppUserForIdentity(data.user);
-  } catch (error) {
-    console.error("CareerForge user mapping failed after Neon Auth signup:", error);
-    return { error: "Your account was created, but your student profile could not be prepared. Please sign in again." };
+  const { error: otpError } = await auth.emailOtp.sendVerificationOtp({ email });
+  if (otpError) {
+    console.error("Neon Auth verification OTP send failed:", otpError);
+    return { error: "Your account may be created, but the verification code could not be sent. Try signing in or resending the code." };
   }
 
-  revalidatePath("/dashboard", "layout");
-  redirect("/dashboard");
+  redirect(`/verify-email?email=${encodeURIComponent(email)}`);
 }
