@@ -16,6 +16,36 @@ const READINESS_WEIGHTS = {
 
 type MetricKey = keyof typeof READINESS_WEIGHTS;
 
+function calculateGitHubReadiness(
+  isConnected: boolean,
+  repositoryCount: number,
+  readmeCount: number,
+  skillEvidenceCount: number
+) {
+  if (!isConnected) return { score: 0, available: false, explanation: "Connect GitHub to provide technical portfolio evidence." };
+  if (repositoryCount === 0) return { score: 50, available: true, explanation: "GitHub connected but no repositories found." };
+  const score = Math.round(
+    (readmeCount / repositoryCount) * 50 +
+    (skillEvidenceCount / Math.max(1, repositoryCount)) * 50
+  );
+  return {
+    score,
+    available: true,
+    explanation: `${repositoryCount} repositories with ${skillEvidenceCount} detected skills.`,
+  };
+}
+
+function calculateWeightedReadiness(metrics: Record<MetricKey, any>) {
+  return Math.round(
+    (Object.keys(READINESS_WEIGHTS) as MetricKey[]).reduce(
+      (total, key) => total + metrics[key].score * (READINESS_WEIGHTS[key] / 100),
+      0
+    )
+  );
+}
+
+type MetricKey = keyof typeof READINESS_WEIGHTS;
+
 export type ReadinessMetric = {
   score: number;
   available: boolean;
