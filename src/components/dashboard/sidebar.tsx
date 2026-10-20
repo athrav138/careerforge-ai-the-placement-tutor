@@ -19,10 +19,12 @@ import {
   BriefcaseBusiness,
   ListChecks,
   GraduationCap,
+  Compass,
 } from "lucide-react";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/placement-preparation", label: "Placement Preparation", icon: Compass },
   { href: "/dashboard/career", label: "Career Fit", icon: Target },
   { href: "/dashboard/skills", label: "Skill Gap", icon: BarChart3 },
   { href: "/dashboard/roadmap", label: "Roadmap", icon: Map },
@@ -46,7 +48,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const item = (l: (typeof nav)[number]) => {
-    const active = pathname === l.href;
+    const active = pathname === l.href || (l.href !== "/dashboard" && pathname.startsWith(`${l.href}/`));
     return (
       <Link
         key={l.href}
