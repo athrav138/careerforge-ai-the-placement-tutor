@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -59,7 +59,7 @@ export default function PlacementPreparationPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
-  async function load(refresh = false, regenerate = false) {
+  const load = useCallback(async (refresh = false, regenerate = false) => {
     setError("");
     if (refresh) setRefreshing(true);
     else setLoading(true);
@@ -83,11 +83,11 @@ export default function PlacementPreparationPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   return (
     <>
