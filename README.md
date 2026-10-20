@@ -15,7 +15,7 @@ migration runbook before deploying.
 Public: `/`, `/about`, `/features`, `/how-it-works`, `/research`, `/faq`,
 `/contact`, `/login`, `/register`.
 
-Dashboard: `/dashboard`, `/dashboard/career`, `/dashboard/skills`,
+Dashboard: `/dashboard`, `/dashboard/placement-preparation`, `/dashboard/career`, `/dashboard/skills`,
 `/dashboard/roadmap`, `/dashboard/resume`, `/dashboard/aptitude`,
 `/dashboard/projects`, `/dashboard/interview`, `/dashboard/analytics`,
 `/dashboard/mentor`, `/dashboard/portfolio`, `/dashboard/profile`,
@@ -40,6 +40,13 @@ Dashboard: `/dashboard`, `/dashboard/career`, `/dashboard/skills`,
 
 See [the Neon setup guide](docs/NEON_SETUP.md) for Auth settings, callbacks,
 database migration notes, and the safe setup order.
+
+
+## Placement preparation intelligence
+
+The student-facing `/dashboard/placement-preparation` workspace brings together the current target career, latest persisted career analysis, readiness signals, roadmap progress, and next actions from the Career Action Center. Its API uses the authenticated student's server-resolved profile and returns private, uncached data. Priority actions are based on existing persisted records and deterministic readiness rules; unavailable evidence is labelled as not measured rather than inferred.
+
+Use **Refresh priorities** to regenerate the existing Career Action Center actions before loading the consolidated overview. This feature reuses existing Prisma models and does not require a new schema migration.
 
 ## Design system
 
