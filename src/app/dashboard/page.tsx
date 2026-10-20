@@ -14,6 +14,7 @@ import {
   Briefcase,
   Mic,
   Target,
+  Compass,
 } from "lucide-react";
 import DashboardHeader from "@/components/dashboard/header";
 import Panel from "@/components/ui/panel";
@@ -31,6 +32,7 @@ const actions = [
 ];
 
 const quickLinks = [
+  { href: "/dashboard/placement-preparation", label: "PLACEMENT PLAN", title: "Review your next best actions", icon: Compass },
   { href: "/dashboard/career", label: "CAREER MATCH", title: "Strong fit detected", icon: BriefcaseBusiness },
   { href: "/dashboard/skills", label: "TOP GAP", title: "Review your saved skills", icon: Target },
   { href: "/dashboard/interview", label: "INTERVIEW PREP", title: "Start your first mock round", icon: Mic },
