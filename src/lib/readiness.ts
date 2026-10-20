@@ -1,50 +1,11 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-
-const READINESS_WEIGHTS = {
-  career: 12,
-  skills: 18,
-  resume: 12,
-  aptitude: 12,
-  interview: 12,
-  learning: 12,
-  projects: 8,
-  github: 7,
-  linkedin: 7,
-} as const;
+import { calculateGitHubReadiness, calculateWeightedReadiness, READINESS_WEIGHTS } from "@/lib/readiness-calculation";
 
 type MetricKey = keyof typeof READINESS_WEIGHTS;
 
-function calculateGitHubReadiness(
-  isConnected: boolean,
-  repositoryCount: number,
-  readmeCount: number,
-  skillEvidenceCount: number
-) {
-  if (!isConnected) return { score: 0, available: false, explanation: "Connect GitHub to provide technical portfolio evidence." };
-  if (repositoryCount === 0) return { score: 50, available: true, explanation: "GitHub connected but no repositories found." };
-  const score = Math.round(
-    (readmeCount / repositoryCount) * 50 +
-    (skillEvidenceCount / Math.max(1, repositoryCount)) * 50
-  );
-  return {
-    score,
-    available: true,
-    explanation: `${repositoryCount} repositories with ${skillEvidenceCount} detected skills.`,
-  };
-}
 
-function calculateWeightedReadiness(metrics: Record<MetricKey, any>) {
-  return Math.round(
-    (Object.keys(READINESS_WEIGHTS) as MetricKey[]).reduce(
-      (total, key) => total + metrics[key].score * (READINESS_WEIGHTS[key] / 100),
-      0
-    )
-  );
-}
-
-type MetricKey = keyof typeof READINESS_WEIGHTS;
 
 export type ReadinessMetric = {
   score: number;
@@ -63,6 +24,7 @@ export type ReadinessProfile = {
   overallScore: number;
   metrics: Record<MetricKey, ReadinessMetric>;
   weakSkillCount: number;
+  weakSkillCountAvailable: boolean;
   recommendations: ReadinessRecommendation[];
   computedAt: string;
 };
@@ -221,23 +183,12 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
   // GitHub evidence
   const githubReadmeCount = githubConnection?._count.repositories ?? 0;
   const githubSkillCount = githubConnection?._count.skillEvidence ?? 0;
-  const githubScore = githubConnection
-    ? githubRepositoryCount > 0
-      ? clampScore(
-          (githubReadmeCount / githubRepositoryCount) * 50 +
-          (githubSkillCount / Math.max(1, githubRepositoryCount)) * 50
-        )
-      : 50
-    : null;
-  const github = githubScore !== null
-    ? {
-        score: githubScore,
-        available: true,
-        explanation: githubRepositoryCount > 0
-          ? `${githubRepositoryCount} repositories with ${githubSkillCount} detected skills.`
-          : "GitHub connected but no repositories found.",
-      }
-    : unavailable("Connect GitHub to provide technical portfolio evidence.");
+  const github = calculateGitHubReadiness(
+    Boolean(githubConnection),
+    githubRepositoryCount,
+    githubReadmeCount,
+    githubSkillCount,
+  );
 
   // LinkedIn evidence
   const linkedinScore = linkedinProfile
@@ -256,12 +207,7 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
     : unavailable("Import LinkedIn profile to provide professional evidence.");
 
   const metrics = { career, skills, resume: resumeMetric, aptitude, interview, learning, projects, github, linkedin };
-  const overallScore = clampScore(
-    (Object.keys(READINESS_WEIGHTS) as MetricKey[]).reduce(
-      (total, key) => total + metrics[key].score * (READINESS_WEIGHTS[key] / 100),
-      0
-    )
-  );
+  const overallScore = calculateWeightedReadiness(metrics);
   const weakSkillCount = skillPerformances.filter((skill) => ["CRITICAL", "WEAK"].includes(skill.classification)).length;
   const recommendations: ReadinessRecommendation[] = [];
 
@@ -290,7 +236,14 @@ export async function calculateReadiness(studentProfileId: string): Promise<Read
     recommendations.push({ id: "linkedin", title: "Complete LinkedIn profile", detail: linkedin.available ? `LinkedIn profile score is ${linkedin.score}%; add skills and experience.` : linkedin.explanation, href: "/dashboard/linkedin" });
   }
 
-  return { overallScore, metrics, weakSkillCount, recommendations: recommendations.slice(0, 5), computedAt: new Date().toISOString() };
+  return {
+    overallScore,
+    metrics,
+    weakSkillCount,
+    weakSkillCountAvailable: skillPerformances.length > 0,
+    recommendations: recommendations.slice(0, 5),
+    computedAt: new Date().toISOString(),
+  };
 }
 
 export async function storeDailyReadinessSnapshot(studentProfileId: string, readiness: ReadinessProfile) {

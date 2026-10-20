@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useSyncExternalStore } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Bell, Check, Info, AlertTriangle, XCircle, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { markAllNotificationsAsRead, markNotificationAsRead } from "@/lib/notifications-client";
 
 type Notification = {
   id: string;
@@ -16,30 +18,21 @@ export default function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
-  const permission = useSyncExternalStore(
-    (onChange) => {
-      window.addEventListener("focus", onChange);
-      window.addEventListener("notificationpermissionchange", onChange);
-      return () => {
-        window.removeEventListener("focus", onChange);
-        window.removeEventListener("notificationpermissionchange", onChange);
-      };
-    },
-    () => ("Notification" in window ? Notification.permission : "default"),
-    () => "default",
-  );
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [fetchError, setFetchError] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = async () => {
     setLoading(true);
+    setFetchError("");
     try {
       const res = await fetch("/api/notifications");
       const data = await res.json();
-      if (res.ok) {
-        setNotifications(data.notifications || []);
-      }
-    } catch (e) {
-      console.error(e);
+      if (!res.ok) throw new Error(data.error || "Unable to load notifications.");
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unreadCount ?? 0);
+    } catch (error) {
+      setFetchError(error instanceof Error ? error.message : "Unable to load notifications.");
     } finally {
       setLoading(false);
     }
@@ -50,7 +43,10 @@ export default function NotificationsDropdown() {
     fetch("/api/notifications")
       .then(async (response) => {
         const data = await response.json();
-        if (response.ok && !cancelled) setNotifications(data.notifications || []);
+        if (response.ok && !cancelled) {
+          setNotifications(data.notifications || []);
+          setUnreadCount(data.unreadCount ?? 0);
+        }
       })
       .catch((error) => { if (!cancelled) console.error(error); });
 
@@ -75,10 +71,11 @@ export default function NotificationsDropdown() {
 
   const markAsRead = async (id: string) => {
     try {
-      await fetch(`/api/notifications/${id}`, { method: "PATCH" });
+      await markNotificationAsRead(id);
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
       );
+      setUnreadCount((count) => Math.max(0, count - 1));
     } catch (e) {
       console.error(e);
     }
@@ -86,32 +83,24 @@ export default function NotificationsDropdown() {
 
   const markAllAsRead = async () => {
     try {
-      await fetch("/api/notifications/read-all", { method: "POST" });
+      await markAllNotificationsAsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
     } catch (e) {
       console.error(e);
     }
   };
 
-  const requestPermission = async () => {
-    if ("Notification" in window) {
-      const p = await Notification.requestPermission();
-      if (p === "granted") {
-        new Notification("Notifications Enabled", {
-          body: "You will now receive career reminders and updates.",
-        });
-      }
-    }
-  };
-
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-
   const getIcon = (type: string) => {
     switch (type) {
+      case "WARNING":
+      case "ALERT":
       case "warning":
         return <AlertTriangle size={16} className="text-amber-400" />;
+      case "ERROR":
       case "error":
         return <XCircle size={16} className="text-red-400" />;
+      case "SUCCESS":
       case "success":
         return <CheckCircle2 size={16} className="text-emerald-400" />;
       default:
@@ -124,7 +113,7 @@ export default function NotificationsDropdown() {
       <button
         onClick={toggleDropdown}
         className="relative inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 p-2 text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-        aria-label="Notifications"
+        aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"}
       >
         <Bell size={18} />
         {unreadCount > 0 && (
@@ -138,7 +127,7 @@ export default function NotificationsDropdown() {
       {open && (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-white/15 bg-[#0c1322]/95 backdrop-blur-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[32rem]">
           <div className="p-4 border-b border-white/10 bg-[#050811] flex items-center justify-between">
-            <h3 className="font-bold text-white text-sm">Notifications</h3>
+            <h3 className="font-bold text-white text-sm">Notifications{unreadCount > 0 ? ` (${unreadCount} unread)` : ""}</h3>
             {unreadCount > 0 && (
               <button onClick={markAllAsRead} className="text-xs text-[#00f0ff] font-semibold hover:underline">
                 Mark all read
@@ -146,19 +135,8 @@ export default function NotificationsDropdown() {
             )}
           </div>
           
-          {permission !== "granted" && (
-            <div className="p-3 bg-[#00f0ff]/10 border-b border-[#00f0ff]/20 flex flex-col gap-2 items-start">
-              <p className="text-xs text-slate-300">Enable browser notifications to receive daily placement suggestions and alerts.</p>
-              <button 
-                onClick={requestPermission}
-                className="text-xs font-semibold bg-[#00f0ff] text-black px-2.5 py-1 rounded-lg hover:bg-cyan-300 transition-colors"
-              >
-                Enable Notifications
-              </button>
-            </div>
-          )}
-
           <div className="overflow-y-auto flex-1">
+            {fetchError && <div className="p-4 text-sm text-rose-300" role="alert">{fetchError}<button onClick={() => void fetchNotifications()} className="ml-2 underline">Retry</button></div>}
             {loading && notifications.length === 0 ? (
               <div className="p-8 text-center text-sm text-slate-400">Loading...</div>
             ) : notifications.length === 0 ? (
@@ -193,6 +171,9 @@ export default function NotificationsDropdown() {
                 ))}
               </div>
             )}
+          </div>
+          <div className="border-t border-white/10 p-3 text-center">
+            <Link href="/dashboard/notifications" onClick={() => setOpen(false)} className="text-xs font-semibold text-[#00f0ff] hover:underline">View all notifications</Link>
           </div>
         </div>
       )}

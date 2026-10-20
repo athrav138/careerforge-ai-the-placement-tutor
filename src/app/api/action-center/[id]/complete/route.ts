@@ -3,11 +3,18 @@ import { getCurrentUser } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(_: Request, context: { params: Promise<{ id: string }> }) {
-  const params = await context.params;
-  const user = await getCurrentUser();
-  if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-  const action = await prisma.careerAction.findUnique({ where: { id: params.id } });
-  if (!action) return NextResponse.json({ error: "Action not found." }, { status: 404 });
-  if (action.studentProfileId !== user.studentProfileId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  return NextResponse.json({ action: await prisma.careerAction.update({ where: { id: action.id }, data: { completed: true, completedAt: new Date() } }) });
+  const { id } = await context.params;
+  try {
+    const user = await getCurrentUser();
+    if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+
+    const where = { id, studentProfileId: user.studentProfileId };
+    const result = await prisma.careerAction.updateMany({ where, data: { completed: true, completedAt: new Date() } });
+    if (!result.count) return NextResponse.json({ error: "Action not found." }, { status: 404 });
+    const action = await prisma.careerAction.findFirst({ where });
+    if (!action) return NextResponse.json({ error: "Action not found." }, { status: 404 });
+    return NextResponse.json({ action });
+  } catch {
+    return NextResponse.json({ error: "Unable to complete action." }, { status: 500 });
+  }
 }

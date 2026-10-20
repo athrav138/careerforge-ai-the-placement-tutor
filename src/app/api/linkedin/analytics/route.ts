@@ -195,7 +195,7 @@ export async function GET() {
   } catch (error) {
     console.error("LinkedIn analytics error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to calculate LinkedIn analytics" },
+      { error: "Failed to calculate LinkedIn analytics" },
       { status: 500 }
     );
   }

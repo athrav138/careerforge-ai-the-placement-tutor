@@ -218,7 +218,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("LinkedIn import error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to import LinkedIn profile" },
+      { error: "Failed to import LinkedIn profile" },
       { status: 500 }
     );
   }

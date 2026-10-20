@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import BrandLogo from "@/components/brand-logo";
 
 const cols = [
   {
@@ -37,14 +37,7 @@ export default function SiteFooter() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid sm:grid-cols-4 gap-10 mb-12">
           <div>
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 text-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.2)]">
-                <GraduationCap size={18} />
-              </div>
-              <span className="text-xl font-black tracking-tighter text-white">
-                CareerForge<span className="text-[#00f0ff]">.AI</span>
-              </span>
-            </div>
+            <BrandLogo className="h-12 w-36" />
             <p className="text-sm text-slate-400 mt-4 leading-relaxed max-w-[260px]">
               The intelligent placement tutor for personalized career guidance, preparation planning, and placement-readiness tracking.
             </p>

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { GraduationCap, LayoutDashboard, Menu, X } from "lucide-react";
+import { LayoutDashboard, Menu, X } from "lucide-react";
 import Button from "@/components/ui/button";
+import BrandLogo from "@/components/brand-logo";
 import { getSession, UserSession } from "@/lib/auth";
 
 const links = [
@@ -43,13 +44,8 @@ export default function SiteNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05050a]/80 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 text-[#00f0ff] flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.2)] group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all">
-            <GraduationCap size={18} />
-          </div>
-          <span className="text-xl font-black tracking-tighter text-white">
-            CareerForge<span className="text-[#00f0ff]">.AI</span>
-          </span>
+        <Link href="/" aria-label="CareerForge AI home" className="flex items-center gap-2.5 group">
+          <BrandLogo className="h-10 w-32 sm:h-12 sm:w-36" />
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
           {links.map((l) => (

@@ -59,11 +59,7 @@ export default function PlacementPreparationPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
-  const load = useCallback(async (refresh = false, regenerate = false) => {
-    setError("");
-    if (refresh) setRefreshing(true);
-    else setLoading(true);
-
+  const load = useCallback(async (regenerate = false) => {
     try {
       if (regenerate) {
         const generated = await fetch("/api/action-center", { method: "POST", cache: "no-store" });
@@ -85,9 +81,32 @@ export default function PlacementPreparationPage() {
     }
   }, []);
 
-  useEffect(() => {
-    void load();
+  const refresh = useCallback((regenerate = false) => {
+    setError("");
+    if (regenerate) setRefreshing(true);
+    else setLoading(true);
+    void load(regenerate);
   }, [load]);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/placement-preparation", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error ?? "Unable to load placement preparation.");
+        return payload as Preparation;
+      })
+      .then((payload) => {
+        if (active) setData(payload);
+      })
+      .catch((err) => {
+        if (active) setError(err instanceof Error ? err.message : "Unable to load placement preparation.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   return (
     <>
@@ -123,7 +142,7 @@ export default function PlacementPreparationPage() {
                     : "Choose a target career and run a career analysis to unlock role-specific priorities. You can still use the preparation modules below."}
                 </p>
               </div>
-              <Button onClick={() => void load(true, true)} disabled={refreshing} icon={false}>
+              <Button onClick={() => refresh(true)} disabled={refreshing} icon={false}>
                 <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /> {refreshing ? "Refreshing…" : "Refresh priorities"}
               </Button>
             </div>

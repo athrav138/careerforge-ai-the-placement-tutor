@@ -7,8 +7,7 @@ export async function POST() {
   if (!user?.studentProfileId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   try {
     return NextResponse.json({ actions: await generateActions(user.studentProfileId) });
-  } catch (error) {
-    console.error("Unable to generate actions:", error);
+  } catch {
     return NextResponse.json({ error: "Unable to generate actions." }, { status: 500 });
   }
 }

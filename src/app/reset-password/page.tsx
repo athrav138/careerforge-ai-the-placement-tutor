@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { updatePassword } from "@/app/login/actions";
+import BrandLogo from "@/components/brand-logo";
 
 function ResetPasswordForm() {
   const [error, setError] = useState("");
@@ -14,8 +15,8 @@ function ResetPasswordForm() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#05050a] px-6 text-white">
       <section className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0b1020] p-8">
-        <Link href="/" className="text-xl font-black tracking-tight">
-          CareerForge<span className="text-[#00f0ff]">.AI</span>
+        <Link href="/" aria-label="CareerForge AI home" className="inline-block">
+          <BrandLogo className="h-10 w-32" />
         </Link>
         <h1 className="mt-8 text-2xl font-bold">Choose a new password</h1>
 

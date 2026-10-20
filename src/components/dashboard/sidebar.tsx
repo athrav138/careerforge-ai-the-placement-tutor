@@ -17,10 +17,11 @@ import {
   Settings,
   Sparkles,
   BriefcaseBusiness,
+  Bell,
   ListChecks,
-  GraduationCap,
   Compass,
 } from "lucide-react";
+import BrandLogo from "@/components/brand-logo";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -36,7 +37,8 @@ const nav = [
   { href: "/dashboard/mentor", label: "AI Mentor", icon: Bot },
   { href: "/dashboard/profile-optimization", label: "Profile Optimizer", icon: Sparkles },
   { href: "/dashboard/jobs", label: "Job Matching", icon: BriefcaseBusiness },
-  { href: "/dashboard/action-center", label: "Career Action Center", icon: ListChecks },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
+  { href: "/dashboard/action-center", label: "Placement Center", icon: ListChecks },
 ];
 
 const bottomNav = [
@@ -47,45 +49,29 @@ const bottomNav = [
 export default function Sidebar() {
   const pathname = usePathname();
 
-  const item = (l: (typeof nav)[number]) => {
-    const active = pathname === l.href || (l.href !== "/dashboard" && pathname.startsWith(`${l.href}/`));
+  const item = (link: (typeof nav)[number]) => {
+    const active = pathname === link.href || (link.href !== "/dashboard" && pathname.startsWith(`${link.href}/`));
     return (
-      <Link
-        key={l.href}
-        href={l.href}
-        className={`flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium transition-all rounded-xl ${
-          active
-            ? "bg-[#00f0ff]/15 text-[#00f0ff] border border-[#00f0ff]/30 shadow-[0_0_15px_rgba(0,240,255,0.18)]"
-            : "border border-transparent text-slate-400 hover:text-white hover:bg-white/5"
-        }`}
-      >
-        <l.icon size={17} className={active ? "text-[#00f0ff]" : "text-slate-400"} />
-        <span>{l.label}</span>
+      <Link key={link.href} href={link.href} className={`flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition-all ${active ? "border-[#00f0ff]/30 bg-[#00f0ff]/15 text-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.18)]" : "border-transparent text-slate-400 hover:bg-white/5 hover:text-white"}`}>
+        <link.icon size={17} className={active ? "text-[#00f0ff]" : "text-slate-400"} aria-hidden="true" />
+        <span>{link.label}</span>
       </Link>
     );
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-white/10 bg-[#050811] text-slate-100 py-6">
-      <div className="px-5 mb-6">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 text-[#00f0ff] flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.2)] group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all">
-            <GraduationCap size={18} />
-          </div>
-          <span className="text-xl font-black tracking-tighter text-white">
-            CareerForge<span className="text-[#00f0ff]">.AI</span>
-          </span>
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-white/10 bg-[#050811] py-6 text-slate-100 md:flex">
+      <div className="mb-6 px-5">
+        <Link href="/" aria-label="CareerForge AI home" className="flex items-center gap-2.5">
+          <BrandLogo className="h-10 w-32" />
         </Link>
       </div>
-
-      <div className="px-5 mb-2 text-[10px] font-mono tracking-widest text-slate-500 uppercase">
-        Placement Modules
-      </div>
-      <nav className="flex-1 flex flex-col gap-1 px-3 overflow-y-auto">{nav.map(item)}</nav>
-
-      <div className="flex flex-col gap-1 border-t border-white/10 pt-3 mt-3 px-3">
-        {bottomNav.map(item)}
-      </div>
+      <div className="mb-2 px-5 text-[10px] font-mono uppercase tracking-widest text-slate-500">Placement Modules</div>
+      <nav aria-label="Dashboard modules" className="flex flex-1 flex-col gap-1 overflow-y-auto px-3">{nav.map(item)}</nav>
+      <nav aria-label="Account" className="mt-3 flex flex-col gap-1 border-t border-white/10 px-3 pt-3">{bottomNav.map((link) => {
+        const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+        return <Link key={link.href} href={link.href} className={`flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition-all ${active ? "border-[#00f0ff]/30 bg-[#00f0ff]/15 text-[#00f0ff]" : "border-transparent text-slate-400 hover:bg-white/5 hover:text-white"}`}><link.icon size={17} aria-hidden="true" /><span>{link.label}</span></Link>;
+      })}</nav>
     </aside>
   );
 }
