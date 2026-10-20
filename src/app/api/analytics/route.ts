@@ -46,7 +46,16 @@ export async function GET() {
       historicalSnapshots,
       recentActivity,
       activityByDay,
-      completedCounts,
+      [
+        assessments,
+        aptitude,
+        interviews,
+        roadmapTasks,
+        projects,
+        actions,
+        careerAnalyses,
+        resumeAnalyses,
+      ],
     ] = await Promise.all([
       calculateReadiness(user.studentProfileId),
       prisma.readinessScore.findMany({
@@ -201,33 +210,35 @@ export async function GET() {
 
         ORDER BY date ASC
       `,
-      prisma.assessmentAttempt.count({
-        where: { studentProfileId: user.studentProfileId, status: "COMPLETED" },
-      }),
-      prisma.aptitudeAttempt.count({
-        where: { studentProfileId: user.studentProfileId },
-      }),
-      prisma.interviewSession.count({
-        where: { studentProfileId: user.studentProfileId, status: "COMPLETED" },
-      }),
-      prisma.roadmapTask.count({
-        where: {
-          roadmap: { studentProfileId: user.studentProfileId },
-          status: "COMPLETED",
-        },
-      }),
-      prisma.projectRecommendation.count({
-        where: { studentProfileId: user.studentProfileId, status: "COMPLETED" },
-      }),
-      prisma.careerAction.count({
-        where: { studentProfileId: user.studentProfileId, completed: true },
-      }),
-      prisma.careerAnalysis.count({
-        where: { studentProfileId: user.studentProfileId },
-      }),
-      prisma.resume.count({
-        where: { studentProfileId: user.studentProfileId, status: "ANALYZED" },
-      }),
+      Promise.all([
+        prisma.assessmentAttempt.count({
+          where: { studentProfileId: user.studentProfileId, status: "COMPLETED" },
+        }),
+        prisma.aptitudeAttempt.count({
+          where: { studentProfileId: user.studentProfileId },
+        }),
+        prisma.interviewSession.count({
+          where: { studentProfileId: user.studentProfileId, status: "COMPLETED" },
+        }),
+        prisma.roadmapTask.count({
+          where: {
+            roadmap: { studentProfileId: user.studentProfileId },
+            status: "COMPLETED",
+          },
+        }),
+        prisma.projectRecommendation.count({
+          where: { studentProfileId: user.studentProfileId, status: "COMPLETED" },
+        }),
+        prisma.careerAction.count({
+          where: { studentProfileId: user.studentProfileId, completed: true },
+        }),
+        prisma.careerAnalysis.count({
+          where: { studentProfileId: user.studentProfileId },
+        }),
+        prisma.resume.count({
+          where: { studentProfileId: user.studentProfileId, status: "ANALYZED" },
+        }),
+      ]),
     ]);
 
     // Store today's snapshot if it doesn't exist
@@ -286,14 +297,14 @@ export async function GET() {
           byDayLast7: last7Days,
         },
         completedCounts: {
-          assessments: completedCounts.assessments,
-          aptitude: completedCounts.aptitude,
-          interviews: completedCounts.interviews,
-          roadmapTasks: completedCounts.roadmapTasks,
-          projects: completedCounts.projects,
-          actions: completedCounts.actions,
-          careerAnalyses: completedCounts.careerAnalyses,
-          resumeAnalyses: completedCounts.resumeAnalyses,
+          assessments,
+          aptitude,
+          interviews,
+          roadmapTasks,
+          projects,
+          actions,
+          careerAnalyses,
+          resumeAnalyses,
         },
         recentActivity: recentActivity,
         generatedAt: new Date().toISOString(),
