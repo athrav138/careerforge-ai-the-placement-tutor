@@ -59,12 +59,20 @@ export default function PlacementPreparationPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
-  async function load(refresh = false) {
+  async function load(refresh = false, regenerate = false) {
     setError("");
     if (refresh) setRefreshing(true);
     else setLoading(true);
 
     try {
+      if (regenerate) {
+        const generated = await fetch("/api/action-center", { method: "POST", cache: "no-store" });
+        const generatedPayload = await generated.json();
+        if (!generated.ok) {
+          throw new Error(generatedPayload.error ?? "Unable to refresh preparation priorities.");
+        }
+      }
+
       const response = await fetch("/api/placement-preparation", { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? "Unable to load placement preparation.");
@@ -115,8 +123,8 @@ export default function PlacementPreparationPage() {
                     : "Choose a target career and run a career analysis to unlock role-specific priorities. You can still use the preparation modules below."}
                 </p>
               </div>
-              <Button onClick={() => void load(true)} disabled={refreshing} icon={false}>
-                <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /> {refreshing ? "Refreshing…" : "Refresh overview"}
+              <Button onClick={() => void load(true, true)} disabled={refreshing} icon={false}>
+                <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} /> {refreshing ? "Refreshing…" : "Refresh priorities"}
               </Button>
             </div>
           </section>
@@ -155,7 +163,7 @@ export default function PlacementPreparationPage() {
                   <div className="p-8 text-center">
                     <CheckCircle2 className="mx-auto text-cyan" size={28} />
                     <h3 className="mt-3 font-bold text-white">No open priority actions</h3>
-                    <p className="mt-1 text-sm text-slate-300">Refresh the Career Action Center after completing a preparation activity to recalculate actions.</p>
+                    <p className="mt-1 text-sm text-slate-300">Refresh priorities to recalculate actions from your latest preparation records.</p>
                     <Link href="/dashboard/action-center" className="mt-4 inline-flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2 text-sm font-semibold text-white">
                       Open Career Action Center <ArrowRight size={14} />
                     </Link>
