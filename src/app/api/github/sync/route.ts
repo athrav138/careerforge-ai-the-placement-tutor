@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
 import { GitHubClient, detectTechnologies } from "@/lib/github-client";
+import { encryptGitHubToken } from "@/lib/github-token-crypto";
 
 export async function POST(request: Request) {
   try {
@@ -10,13 +11,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { accessToken, username } = body;
+    const body: unknown = await request.json().catch(() => null);
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "A valid GitHub token and username are required." }, { status: 400 });
+    }
 
-    if (!accessToken || !username) {
+    const { accessToken, username } = body as Record<string, unknown>;
+
+    if (typeof accessToken !== "string" || accessToken.length > 512 || !accessToken.trim()
+      || typeof username !== "string" || username.length > 39 || !username.trim()) {
       return NextResponse.json({ error: "Access token and username are required." }, { status: 400 });
     }
 
+    const encryptedAccessToken = encryptGitHubToken(accessToken);
     const client = new GitHubClient(accessToken);
 
     // Fetch GitHub profile
@@ -69,14 +76,14 @@ export async function POST(request: Request) {
           create: {
             studentProfileId: user.studentProfileId!,
             username: profile.login,
-            accessToken, // In production, this should be encrypted
+            accessToken: encryptedAccessToken,
             scope: "public_repo",
             lastSyncedAt: new Date(),
             isActive: true,
           },
           update: {
             username: profile.login,
-            accessToken,
+            accessToken: encryptedAccessToken,
             lastSyncedAt: new Date(),
             isActive: true,
           },
@@ -159,7 +166,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("GitHub sync error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to sync GitHub data" },
+      { error: "Failed to sync GitHub data" },
       { status: 500 }
     );
   }

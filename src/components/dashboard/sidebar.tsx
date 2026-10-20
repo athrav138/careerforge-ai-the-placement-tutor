@@ -17,9 +17,10 @@ import {
   Settings,
   Sparkles,
   BriefcaseBusiness,
+  Bell,
   ListChecks,
-  GraduationCap,
 } from "lucide-react";
+import BrandLogo from "@/components/brand-logo";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -34,7 +35,8 @@ const nav = [
   { href: "/dashboard/mentor", label: "AI Mentor", icon: Bot },
   { href: "/dashboard/profile-optimization", label: "Profile Optimizer", icon: Sparkles },
   { href: "/dashboard/jobs", label: "Job Matching", icon: BriefcaseBusiness },
-  { href: "/dashboard/action-center", label: "Career Action Center", icon: ListChecks },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
+  { href: "/dashboard/action-center", label: "Placement Center", icon: ListChecks },
 ];
 
 const bottomNav = [
@@ -66,13 +68,8 @@ export default function Sidebar() {
   return (
     <aside className="hidden md:flex flex-col w-64 shrink-0 border-r border-white/10 bg-[#050811] text-slate-100 py-6">
       <div className="px-5 mb-6">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 text-[#00f0ff] flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.2)] group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all">
-            <GraduationCap size={18} />
-          </div>
-          <span className="text-xl font-black tracking-tighter text-white">
-            CareerForge<span className="text-[#00f0ff]">.AI</span>
-          </span>
+        <Link href="/" aria-label="CareerForge AI home" className="flex items-center gap-2.5 group">
+          <BrandLogo className="h-10 w-32" />
         </Link>
       </div>
 

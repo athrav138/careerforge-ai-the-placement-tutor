@@ -7,6 +7,7 @@ const protectedRoutes = [
   '/api/aptitude/summary',
   '/api/roadmap',
   '/api/readiness',
+  '/api/readiness/history',
   '/api/github/profile',
   '/api/linkedin/profile',
 ];
@@ -17,6 +18,16 @@ test.describe('Offline authentication API behavior', () => {
 
     expect(response.status()).toBe(401);
     expect(await response.json()).toEqual({ user: null });
+  });
+
+  test('notification read updates expose the protected PUT contract, not PATCH', async ({ request }) => {
+    const response = await request.put('/api/notifications/unauthenticated-test-id');
+
+    expect(response.status()).toBe(401);
+    expect(await response.json()).toMatchObject({ error: 'Unauthorized' });
+
+    const unsupportedMethod = await request.patch('/api/notifications/unauthenticated-test-id');
+    expect(unsupportedMethod.status()).toBe(405);
   });
 
   for (const route of protectedRoutes) {

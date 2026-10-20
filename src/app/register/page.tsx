@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { signup } from "../login/actions";
 import { authClient } from "@/lib/auth";
+import BrandLogo from "@/components/brand-logo";
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
@@ -41,7 +42,7 @@ export default function Register() {
         
         <div className="relative z-10 p-12 max-w-lg text-center">
           <Link href="/" className="inline-block mb-8">
-            <span className="text-2xl font-black tracking-tighter text-white">CareerForge<span className="text-[#00f0ff]">.AI</span></span>
+            <BrandLogo className="h-12 w-36" />
           </Link>
           <h2 className="text-4xl font-bold mb-6">Forge Your Future.</h2>
           <p className="text-slate-300 text-lg">
@@ -58,7 +59,7 @@ export default function Register() {
         <div className="w-full max-w-md relative z-10 py-12">
           <div className="lg:hidden mb-8">
             <Link href="/" className="inline-block">
-              <span className="text-2xl font-black tracking-tighter text-white">CareerForge<span className="text-[#00f0ff]">.AI</span></span>
+              <BrandLogo className="h-10 w-32" />
             </Link>
           </div>
 

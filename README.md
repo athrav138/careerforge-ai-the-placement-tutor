@@ -25,8 +25,9 @@ Dashboard: `/dashboard`, `/dashboard/career`, `/dashboard/skills`,
 ## Local setup
 
 1. Copy `.env.example` to `.env`. Set `DATABASE_URL` to the Neon pooled
-   connection and `DIRECT_URL` to the Neon direct connection. Keep both values
-   private and do not replace one with the other.
+   connection. The app and Prisma use this URL for queries and Prisma commands.
+   `DIRECT_URL` is optional for guarded Neon audit/integration test scripts; if
+   configured, it must point to the same intended database branch.
 2. Enable Neon Managed Better Auth on the intended Neon branch. Set
    `NEON_AUTH_BASE_URL` to that branch's Auth URL and generate a unique
    `NEON_AUTH_COOKIE_SECRET` with at least 32 characters. Set

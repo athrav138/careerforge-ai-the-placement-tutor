@@ -22,13 +22,17 @@ connection string.
 
 Use `.env.example` as the variable list. Set:
 
-- `DATABASE_URL`: Neon pooled runtime connection.
-- `DIRECT_URL`: Neon direct connection for Prisma schema and migration
-  commands.
+- `DATABASE_URL`: Neon pooled connection used by the app and Prisma. The
+  project's Prisma version supports Neon migrations through the pooled URL.
+- `DIRECT_URL`: optional direct connection used by guarded Neon audit and
+  integration-test scripts; it is not required by the application schema.
 - `NEON_AUTH_BASE_URL`: the Auth URL for the same Neon branch.
 - `NEON_AUTH_COOKIE_SECRET`: random secret, at least 32 characters.
 - `NEXT_PUBLIC_SITE_URL`: exact application origin, with scheme and no path.
 - `GEMINI_API_KEY`: optional server-side Gemini integration.
+- `GITHUB_TOKEN_ENCRYPTION_KEY`: base64-encoded 32-byte server-only key for
+  GitHub token encryption. Keep it stable while encrypted tokens exist. Configure
+  it as a Vercel Secret in each environment that runs GitHub sync.
 
 Do not commit `.env` or place database credentials in `NEXT_PUBLIC_*` variables.
 
@@ -67,9 +71,13 @@ recovery, and Prisma-backed profile persistence.
 
 ## Integration status
 
-The dedicated Neon test project's migrations and database persistence/security
-checks are verified. Neon Auth reports email/password signup enabled, but live
-signup currently returns HTTP 403 `feature_not_supported`; successful
-registration and the dependent session/profile flows remain unverified. Keep
-production unchanged until that provider-side rejection is resolved and the
-integration suite passes.
+The previously used integration configuration is stale: its pinned branch and
+endpoint are not present in the currently connected Neon project inventory.
+The ignored `.env.integration.local` file was preserved and its values were not
+displayed. Do not run the legacy integration scripts until an authorized test
+branch and identity are confirmed. On that now-unavailable target, Neon Auth
+previously returned HTTP 403 `feature_not_supported` for test signup; this does
+not establish current Auth behavior. Valid login/logout and dependent
+session/profile flows remain unverified. The separate guarded main-Neon
+persistence suite uses only uniquely named synthetic rows and exact cleanup; it
+does not exercise authenticated APIs.

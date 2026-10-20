@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-server";
 import { prisma } from "@/lib/prisma";
+import { calculateReadiness } from "@/lib/readiness";
+import { buildReadinessHistoryWhere } from "@/lib/readiness-analytics";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -9,13 +11,22 @@ export async function GET() {
   }
 
   try {
-    const snapshots = await prisma.readinessScore.findMany({
-      where: { studentProfileId: user.studentProfileId },
-      orderBy: { createdAt: "asc" },
-      select: { createdAt: true, overallScore: true },
-    });
+    const [snapshots, current] = await Promise.all([
+      prisma.readinessScore.findMany({
+        where: buildReadinessHistoryWhere(user.studentProfileId),
+        orderBy: { createdAt: "asc" },
+        select: { createdAt: true, overallScore: true },
+      }),
+      calculateReadiness(user.studentProfileId),
+    ]);
     return NextResponse.json({
       history: snapshots.map((snapshot) => ({ date: snapshot.createdAt.toISOString(), readiness: snapshot.overallScore })),
+      current: {
+        metrics: current.metrics,
+        weakSkillCount: current.weakSkillCount,
+        weakSkillCountAvailable: current.weakSkillCountAvailable,
+        computedAt: current.computedAt,
+      },
     });
   } catch (error) {
     console.error("Unable to load readiness history:", error);
